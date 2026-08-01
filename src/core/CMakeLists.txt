@@ -15,7 +15,6 @@ add_library(core STATIC
     core_mod.F90
     create_directory.c
     envvars_mod.F90
-    err_mod.F90
     expression_mod.F90
     exprtk_wrapper.cxx
     fieldhelper_mod.F90
@@ -35,7 +34,6 @@ add_library(core STATIC
     mgletmath_mod.F90
     plugins_mod.F90
     pointers_mod.F90
-    precision_mod.F90
     probeoffload_mod.F90
     profile_tools_mod.F90
     profile_tools.c
@@ -64,6 +62,7 @@ target_include_directories(core
 )
 
 target_link_libraries(core
+    PRIVATE corecore
     PRIVATE ${MPI_Fortran_LIBRARIES}
     PRIVATE ${HDF5_Fortran_LIBRARIES}
     PRIVATE ZLIB::ZLIB

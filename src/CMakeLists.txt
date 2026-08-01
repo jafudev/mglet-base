@@ -1,5 +1,6 @@
 # Add separate libraries/subdirectories
 add_subdirectory("core")
+add_subdirectory("corecore")
 add_subdirectory("flow")
 add_subdirectory("ib")
 add_subdirectory("plugins")
@@ -18,6 +19,7 @@ target_include_directories(mgletlib
 )
 target_link_libraries(mgletlib
     PUBLIC core
+    PUBLIC corecore
     PUBLIC flow
     PUBLIC ib
     PUBLIC plugins
