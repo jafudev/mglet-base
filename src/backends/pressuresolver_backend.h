@@ -20,4 +20,4 @@ void rescal_backend(
     const FArrView<mgletint> ip3d
 );
 
-}
+} // namespace mglet::backend

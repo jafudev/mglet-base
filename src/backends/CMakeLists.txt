@@ -1,11 +1,15 @@
 add_library(backends
     fieldhelper.cpp
+    parent2.cpp
     pressuresolver.cpp
 )
 
 if(MGLET_OFFLOAD_BACKEND STREQUAL "cuda")
-    target_sources(backends PRIVATE cuda/fieldhelper_cuda.cu)
-    target_sources(backends PRIVATE cuda/pressuresolver_cuda.cu)
+    target_sources(backends 
+        PRIVATE cuda/fieldhelper_cuda.cu
+        PRIVATE cuda/parent2_cuda.cu
+        PRIVATE cuda/pressuresolver_cuda.cu
+    )
 elseif(MGLET_OFFLOAD_BACKEND STREQUAL "hip")
     target_sources(backends PRIVATE hip/fieldhelper_hip.hip)
 endif()

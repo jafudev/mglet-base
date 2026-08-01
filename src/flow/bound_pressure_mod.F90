@@ -223,6 +223,8 @@ CONTAINS
         CALL level_index(ilevel_index, ilevel)
         nboundtasks = nboundtaskslvl(ilevel_index)
 
+        CALL map_arr_from_device(dp_f)
+
         ASSOCIATE( &
             p => dp_f%arr, &
             pbuffer => dp_f%buffers, &
@@ -236,8 +238,8 @@ CONTAINS
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("bound_pressure_impl_nobp")
 #endif
-        !$omp target teams distribute private(i, igrid, iface, kk, jj, ii, &
-        !$omp& ip3, ipx, ipy, ipz, ipbb)
+        !!$omp target teams distribute private(i, igrid, iface, kk, jj, ii, &
+        !!$omp& ip3, ipx, ipy, ipz, ipbb)
         DO i = 1, nboundtasks
             igrid = boundtasks(1, i, ilevel_index)
             iface = boundtasks(2, i, ilevel_index)
@@ -276,11 +278,13 @@ CONTAINS
                     ddx(ipx), ddy(ipy), ddz(ipz), dz(ipz))
             END SELECT
         END DO
-        !$omp end target teams distribute
+        !!$omp end target teams distribute
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_pop()
 #endif
         END ASSOCIATE
+
+        CALL map_buffers_to_device(dp_f)
     END SUBROUTINE bound_pressure_impl_nobp
 
 
@@ -300,7 +304,7 @@ CONTAINS
 
         i = MIN(i3, i4)
 
-        !$omp parallel do collapse(2) private(j, k, pcnew, bpc, m, n)
+        !!$omp parallel do collapse(2) private(j, k, pcnew, bpc, m, n)
         DO j = 3, jj-2, 2
             DO k = 3, kk-2, 2
                 CALL pressureftocone(k, j, i, kk, jj, ii, p, &
@@ -314,7 +318,7 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        !!$omp end parallel do
     END SUBROUTINE bfront
 
 
@@ -383,7 +387,7 @@ CONTAINS
 
         j = MIN(j3, j4)
 
-        !$omp parallel do collapse(2) private(i, k, pcnew, bpc, l, n)
+        !!$omp parallel do collapse(2) private(i, k, pcnew, bpc, l, n)
         DO i = 3, ii-2, 2
             DO k = 3, kk-2, 2
                 CALL pressureftocone(k, j, i, kk, jj, ii, p, &
@@ -397,7 +401,7 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        !!$omp end parallel do
     END SUBROUTINE bright
 
 
@@ -466,7 +470,7 @@ CONTAINS
 
         k = MIN(k3, k4)
 
-        !$omp parallel do collapse(2) private(j, i, pcnew, bpc, l, m)
+        !!$omp parallel do collapse(2) private(j, i, pcnew, bpc, l, m)
         DO i = 3, ii-2, 2
             DO j = 3, jj-2, 2
                 CALL pressureftocone(k, j, i, kk, jj, ii, p, &
@@ -480,7 +484,7 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        !!$omp end parallel do
     END SUBROUTINE bbottom
 
 

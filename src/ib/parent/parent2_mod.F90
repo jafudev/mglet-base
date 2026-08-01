@@ -6,6 +6,31 @@ MODULE parent2_mod
     IMPLICIT NONE (type, external)
     PRIVATE
 
+    INTERFACE
+        SUBROUTINE process_selftasks_backend(a1, a2, a3, a4, a5, a6, b1, b2, &
+                b3, b4, b5, b6, selftasks_, ip3d_, kkk_, jjj_, iii_) &
+                BIND(C, name="process_selftasks_c")
+            USE precision_mod, ONLY: realk, intk
+            REAL(realk), INTENT(in) :: a1(:)
+            REAL(realk), INTENT(in) :: a2(:)
+            REAL(realk), INTENT(in) :: a3(:)
+            REAL(realk), INTENT(in) :: a4(:)
+            REAL(realk), INTENT(in) :: a5(:)
+            REAL(realk), INTENT(in) :: a6(:)
+            REAL(realk), INTENT(inout) :: b1(:)
+            REAL(realk), INTENT(inout) :: b2(:)
+            REAL(realk), INTENT(inout) :: b3(:)
+            REAL(realk), INTENT(inout) :: b4(:)
+            REAL(realk), INTENT(inout) :: b5(:)
+            REAL(realk), INTENT(inout) :: b6(:)
+            INTEGER(intk), INTENT(in) :: selftasks_(:, :)
+            INTEGER(intk), INTENT(in) :: ip3d_(:)
+            INTEGER(intk), INTENT(in) :: kkk_(:)
+            INTEGER(intk), INTENT(in) :: jjj_(:)
+            INTEGER(intk), INTENT(in) :: iii_(:)
+        END SUBROUTINE process_selftasks_backend
+    END INTERFACE
+
     ! Lists that hold the send and receive request arrays
     TYPE(MPI_Request), ALLOCATABLE :: sendreqs(:), recvreqs(:)
     INTEGER(int32), ALLOCATABLE :: sendlist(:), recvlist(:)
@@ -679,14 +704,40 @@ CONTAINS
 
         IF (nstasks == 0) RETURN
 
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_push("process_selftasks")
+#endif
+
+#ifdef _MGLET_USE_BACKEND_
+        CALL process_selftasks_backend(f1%arr, f2%arr, f3%arr, f4%arr, &
+            f5%arr, f6%arr, f1%buffers, f2%buffers, f3%buffers, f4%buffers, &
+            f5%buffers, f6%buffers, stasks, ip3d, kkk, jjj, iii)
+#else
+        CALL process_selftasks_impl(nstasks, stasks)
+#endif
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_pop()
+#endif
+    END SUBROUTINE process_selftasks
+
+
+    SUBROUTINE process_selftasks_impl(nstasks, stasks)
+        ! Subroutine arguments
+        INTEGER(intk), INTENT(in) :: nstasks
+        INTEGER(intk), INTENT(in) :: stasks(selftasksize, nstasks+1)
+
+        ! Local variables
+        INTEGER(intk) :: itask, fieldid, igridc, ibb, istart, istop, jstart
+        INTEGER(intk) :: jstop, kstart, kstop, jj2d, ii2d
+        INTEGER(intk) :: stag1, stag2, kk, jj, ii, ip3
+
+        IF (nstasks == 0) RETURN
+
         ASSOCIATE(a1 => f1%arr, a2 => f2%arr, a3 => f3%arr, &
                   a4 => f4%arr, a5 => f5%arr, a6 => f6%arr, &
                   b1 => f1%buffers, b2 => f2%buffers, b3 => f3%buffers, &
                   b4 => f4%buffers, b5 => f5%buffers, b6 => f6%buffers)
-
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-        CALL profile_range_push("process_selftasks")
-#endif
 
         !$omp target teams distribute private(itask, fieldid, igridc, ibb, &
         !$omp& istart, istop, jstart, jstop, kstart, kstop, jj2d, ii2d, &
@@ -742,11 +793,8 @@ CONTAINS
         END DO
         !$omp end target teams distribute
 
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-        CALL profile_range_pop()
-#endif
         END ASSOCIATE
-    END SUBROUTINE process_selftasks
+    END SUBROUTINE process_selftasks_impl
 
 
     SUBROUTINE arr_to_buffers(kk, jj, ii, arr, buffers, ibb, &
