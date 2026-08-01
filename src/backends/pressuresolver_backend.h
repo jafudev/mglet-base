@@ -8,6 +8,6 @@
 namespace mglet::backend
 {
 
-void set_field_arr_realk_backend(FArrView<mgletreal> arr, mgletreal val);
+void accumulate_pcorr_backend(FArrView<mgletreal> dp_arr, const FArrView<mgletreal> hilf_arr);
 
 }

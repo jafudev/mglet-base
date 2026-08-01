@@ -12,7 +12,7 @@ MODULE fieldhelper_mod
 
     INTERFACE
         SUBROUTINE set_field_arr_realk_backend(arr, val) &
-                BIND(C, name="set_field_arr_realk_backend")
+                BIND(C, name="set_field_arr_realk_c")
             USE, INTRINSIC :: iso_c_binding, ONLY: c_int64_t
             USE precision_mod, ONLY: realk
             REAL(realk), INTENT(inout) :: arr(:)

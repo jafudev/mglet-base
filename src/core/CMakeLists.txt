@@ -4,7 +4,6 @@ add_library(core STATIC
     charfunc_mod.F90
     checksum_mod.F90
     commbuf_mod.F90
-    comms_mod.F90
     config_mod.F90
     connect/conn_mod.F90
     connect/conn1_mod.F90

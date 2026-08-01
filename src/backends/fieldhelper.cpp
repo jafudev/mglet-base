@@ -1,32 +1,24 @@
-#include <iostream>
 
-extern "C" {
+#ifdef _MGLET_USE_BACKEND_
+
+extern "C"
+{
 #include <ISO_Fortran_binding.h>
 }
+#include <cstddef>
+
 #include <omp.h>
-#include <stdint.h>
-#include <stdio.h>
 
-#include "mglet_precision.h"  // declares launch_set_field_arr_realk()
 #include "errr.h"
+#include "f_arr_view.h"
+#include "fieldhelper_backend.h"
+#include "mglet_precision.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void set_field_arr_realk_backend(CFI_cdesc_t *arr, mgletreal val)
+extern "C" void set_field_arr_realk_c(CFI_cdesc_t* field_arr, mgletreal val)
 {
-    if (arr->rank != 1) MGLET_ERRR();
+    const auto arr = mglet::backend::FArrView<mgletreal>(field_arr);
 
-    mgletreal* host_ptr = (mgletreal*)arr->base_addr;
-    int device_num = omp_get_default_device();
-
-    mgletreal* dev_ptr = (mgletreal*)omp_get_mapped_ptr(host_ptr, device_num);
-    if (dev_ptr == NULL) MGLET_ERRR();
-
-
+    mglet::backend::set_field_arr_realk_backend(arr, val);
 }
 
-#ifdef __cplusplus
-}
-#endif
+#endif // _MGLET_USE_BACKEND_

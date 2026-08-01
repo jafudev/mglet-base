@@ -14,6 +14,15 @@ MODULE pressuresolver_mod
     IMPLICIT NONE (type, external)
     PRIVATE
 
+    INTERFACE
+        SUBROUTINE accumulate_pcorr_backend(dp, hilf) &
+                BIND(C, name="accumulate_pcorr_c")
+            USE precision_mod, ONLY: realk
+            REAL(realk), INTENT(inout) :: dp(:)
+            REAL(realk), INTENT(in) :: hilf(:)
+        END SUBROUTINE accumulate_pcorr_backend
+    END INTERFACE
+
     ! Type of pressure solver
     !   0 : Hyperplane SIP
     !   1 : SIP on coarsest level, then SOR on subsequent levels
@@ -885,25 +894,40 @@ CONTAINS
         TYPE(field_t), INTENT(in) :: hilf
 
         ! Local variables
-        INTEGER(intk) :: i, n
-
-        IF (SIZE(dp%arr) /= SIZE(hilf%arr)) CALL errr(__FILE__, __LINE__)
-
-        n = SIZE(dp%arr)
-
-        ASSOCIATE(dp => dp%arr, hilf => hilf%arr)
+        ! none...
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("accumulate_pcorr")
 #endif
+
+#ifdef _MGLET_USE_BACKEND_
+        CALL accumulate_pcorr_backend(dp%arr, hilf%arr)
+#else
+        CALL accumulate_pcorr_impl(dp%arr, hilf%arr)  
+#endif
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_pop()
+#endif
+    END SUBROUTINE accumulate_pcorr
+
+
+    SUBROUTINE accumulate_pcorr_impl(dp, hilf)
+        ! Subroutine arguments
+        REAL(realk), CONTIGUOUS, INTENT(inout) :: dp(:)
+        REAL(realk), CONTIGUOUS, INTENT(in) :: hilf(:)
+
+        ! Local variables
+        INTEGER(intk) :: i, n
+
+        IF (SIZE(dp) /= SIZE(hilf)) CALL errr(__FILE__, __LINE__)
+
+        n = SIZE(dp)
+
         !$omp target teams loop
         DO i = 1, n
             dp(i) = dp(i) + hilf(i)
         END DO
         !$omp end target teams loop
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-        CALL profile_range_pop()
-#endif
-        END ASSOCIATE
-    END SUBROUTINE accumulate_pcorr
+    END SUBROUTINE accumulate_pcorr_impl
 END MODULE pressuresolver_mod

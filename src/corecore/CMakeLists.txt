@@ -1,4 +1,5 @@
 add_library(corecore STATIC
+    comms_mod.F90
     err_mod.F90
     precision_mod.F90
 )
