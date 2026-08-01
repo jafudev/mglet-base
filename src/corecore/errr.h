@@ -4,7 +4,7 @@
 
 #include "mglet_precision.h"
 
-#define MGLET_ERR(__FILE__, static_cast<mgletint>(__LINE__))
+#define MGLET_ERRR() errr_c(__FILE__, static_cast<mgletint>(__LINE__))
 
 extern "C"
 {

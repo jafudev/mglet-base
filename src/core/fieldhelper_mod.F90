@@ -10,6 +10,16 @@ MODULE fieldhelper_mod
     IMPLICIT NONE(type, external)
     PRIVATE
 
+    INTERFACE
+        SUBROUTINE set_field_arr_realk_backend(arr, val) &
+                BIND(C, name="set_field_arr_realk_backend")
+            USE, INTRINSIC :: iso_c_binding, ONLY: c_int64_t
+            USE precision_mod, ONLY: realk
+            REAL(realk), INTENT(inout) :: arr(:)
+            REAL(realk), VALUE, INTENT(in) :: val
+        END SUBROUTINE set_field_arr_realk_backend
+    END INTERFACE
+
     INTERFACE set_field_arr
         PROCEDURE set_field_arr_realk
         PROCEDURE set_field_arr_ifk
@@ -34,26 +44,42 @@ CONTAINS
             device2 = .FALSE.
         END IF
 
-        IF (device2) THEN
-            n = SIZE(field%arr)
-
-            ASSOCIATE(arr => field%arr)
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
             CALL profile_range_push("set_field_arr_realk")
 #endif
-            !$omp target teams loop
-            DO i = 1, n
-                arr(i) = val
-            END DO
-            !$omp end target teams loop
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-            CALL profile_range_pop()
+
+        IF (device2) THEN
+#ifdef _MGLET_USE_BACKEND_
+        CALL set_field_arr_realk_backend(field%arr, val)
+#else
+        CALL set_field_arr_realk_omp(field%arr, val)
 #endif
-            END ASSOCIATE
         ELSE
             field%arr = val
         END IF
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+            CALL profile_range_pop()
+#endif
     END SUBROUTINE set_field_arr_realk
+
+
+    SUBROUTINE set_field_arr_realk_omp(arr, val)
+        ! Subroutine arguments
+        REAL(realk), CONTIGUOUS, INTENT(inout) :: arr(:)
+        REAL(realk), INTENT(in) :: val
+
+        ! Local variables
+        INTEGER(intk) :: i, n
+
+        n = SIZE(arr)
+
+        !$omp target teams loop
+        DO i = 1, n
+            arr(i) = val
+        END DO
+        !$omp end target teams loop
+    END SUBROUTINE set_field_arr_realk_omp
 
 
     SUBROUTINE set_field_arr_ifk(field, val, device)

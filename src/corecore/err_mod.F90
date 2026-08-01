@@ -108,4 +108,26 @@ CONTAINS
 
         CALL err_abort(254_intk, "MPI communication error", fname, line)
     END SUBROUTINE err_mpi
+
+
+    SUBROUTINE errr_c(fname, line) BIND(C, NAME="errr_c")
+        CHARACTER(KIND=c_char), INTENT(IN) :: fname(*)
+        INTEGER(intk), VALUE, INTENT(IN) :: line
+
+        CHARACTER(LEN=:), ALLOCATABLE :: f_fname
+        INTEGER :: length, i
+
+        length = 0
+        DO
+            IF (fname(length + 1) == c_null_char) EXIT
+            length = length + 1
+        END DO
+
+        ALLOCATE (CHARACTER(LEN=length) :: f_fname)
+        DO i = 1, length
+            f_fname(i:i) = fname(i)
+        END DO
+
+        CALL errr(f_fname, line)
+    END SUBROUTINE errr_c
 END MODULE err_mod
