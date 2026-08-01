@@ -295,31 +295,30 @@ CONTAINS
             ! either.
             CALL conn(layers=1, s1=hilf)
 
-            ! TODO(offload): Remove once surrounding subroutines are offloaded
-            CALL map_arr_from_device(rhs, message="from:rhs%arr")
+            CALL map_arr_to_device(hilf, rhs, message="to:hilf|rhs")
 
             ! res <- laplace(hilf)
             CALL laplacephi(res, hilf)
 
-            CALL map_arr_to_device(res, rhs, message="to:res|rhs%arr")
             ! rhs <- rhs + res
             CALL rescal(rhs, res)
+
             CALL map_arr_from_device(rhs, res, message="from:res|rhs%arr")
             ! TODO(offload): Remove once surrounding subroutines are offloaded
             ! CALL map_arr_from_device(rhs, message="from:rhs%arr")
-
-            ! TODO(offload): Remove once surrounding subroutines are offloaded
-            CALL map_arr_to_device(rhs, message="to:rhs%arr")
 
             DO ilevel = maxlevel, minlevel+1, -1
                 CALL ftoc(ilevel, rhs, rhs, 'R')
             END DO
 
+            ! TODO(offload): Remove once surrounding subroutines are offloaded
+            CALL map_arr_to_device(rhs, message="to:rhs%arr")
+
             ! Max of RHS scaled according to levels
             CALL maxabscal(maxrhs, maxrhslvl, rhs)
 
             ! dp = dp + hilf
-            CALL map_arr_to_device(dp, hilf, message="to:dp%arr|hilf%arr")
+            CALL map_arr_to_device(dp, message="to:dp%arr")
             CALL accumulate_pcorr(dp, hilf)
             CALL set_field_arr(hilf, 0.0_realk, device=.TRUE.)
             ipc = ipc + ninner

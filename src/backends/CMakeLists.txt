@@ -1,5 +1,6 @@
 add_library(backends
     fieldhelper.cpp
+    laplacephi.cpp
     parent2.cpp
     pressuresolver.cpp
 )
@@ -7,6 +8,7 @@ add_library(backends
 if(MGLET_OFFLOAD_BACKEND STREQUAL "cuda")
     target_sources(backends 
         PRIVATE cuda/fieldhelper_cuda.cu
+        PRIVATE cuda/laplacephi_cuda.cu
         PRIVATE cuda/parent2_cuda.cu
         PRIVATE cuda/pressuresolver_cuda.cu
     )
