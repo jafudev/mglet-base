@@ -13,6 +13,27 @@ extern "C"
 #include "mglet_precision.h"
 #include "pressuresolver_backend.h"
 
+extern "C" void maxabscal_c(
+    CFI_cdesc_t* maxabsgrid,
+    CFI_cdesc_t* phi,
+    CFI_cdesc_t* mygrids,
+    mgletint nmygrids,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* idim3d)
+{
+    mglet::backend::maxabscal_backend(
+        mglet::backend::FArrView<mgletreal>(maxabsgrid),
+        mglet::backend::FArrView<mgletreal>(phi),
+        mglet::backend::FArrView<mgletint>(mygrids),
+        nmygrids,
+        mglet::backend::FArrView<mgletint>(kkk),
+        mglet::backend::FArrView<mgletint>(jjj),
+        mglet::backend::FArrView<mgletint>(iii),
+        mglet::backend::FArrView<mgletint>(idim3d));
+}
+
 extern "C" void accumulate_pcorr_c(CFI_cdesc_t* dp, CFI_cdesc_t* hilf)
 {
     const auto dp_view = mglet::backend::FArrView<mgletreal>(dp);

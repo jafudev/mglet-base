@@ -46,8 +46,8 @@ CONTAINS
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("laplacephi")
 #endif
-        !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3, ipx, &
-        !$omp& ipy, ipz)
+        ! !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3, ipx, &
+        ! !$omp& ipy, ipz)
         DO i = 1, nmygrids
             igrid = mygrids(i)
             CALL get_mgdims(kk, jj, ii, igrid)
@@ -61,7 +61,7 @@ CONTAINS
                 aw(ipx), ae(ipx), an(ipy), as(ipy), at(ipz), ab(ipz), &
                 ap(ip3), bp(ip3))
         END DO
-        !$omp end target teams distribute
+        ! !$omp end target teams distribute
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_pop()
 #endif
@@ -108,8 +108,8 @@ CONTAINS
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("laplacephi_level")
 #endif
-        !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3, ipx, &
-        !$omp& ipy, ipz)
+        ! !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3, ipx, &
+        ! !$omp& ipy, ipz)
         DO i = 1, nmygridslvl(ilevel)
             igrid = mygridslvl(i, ilevel)
             CALL get_mgdims(kk, jj, ii, igrid)
@@ -123,7 +123,7 @@ CONTAINS
                 aw(ipx), ae(ipx), an(ipy), as(ipy), at(ipz), ab(ipz), &
                 ap(ip3), bp(ip3))
         END DO
-        !$omp end target teams distribute
+        ! !$omp end target teams distribute
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_pop()
 #endif
@@ -133,7 +133,7 @@ CONTAINS
 
     PURE SUBROUTINE laplacephi_grid(kk, jj, ii, res, phi, aw, ae, an, as, &
             at, ab, ap, bp)
-        !$omp declare target
+        ! !$omp declare target
         ! Subroutine arguments
         INTEGER(intk), INTENT(in) :: kk, jj, ii
         REAL(realk), INTENT(inout) :: res(kk, jj, ii)
@@ -146,7 +146,7 @@ CONTAINS
         ! Local variables
         INTEGER :: k, j, i
 
-        !$omp parallel do collapse(3) private(i, j, k)
+        ! !$omp parallel do collapse(3) private(i, j, k)
         DO i = 3, ii-2
             DO j = 3, jj-2
                 DO k = 3, kk-2
@@ -161,6 +161,6 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        ! !$omp end parallel do
     END SUBROUTINE laplacephi_grid
 END MODULE laplacephi_mod

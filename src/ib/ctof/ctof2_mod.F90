@@ -132,11 +132,11 @@ CONTAINS
 
         CALL prepare_mpirecvtasks(mpirecvtasks, nmpirecvtasks, ilevel)
 
-        !$omp target enter data map(to: &
-        !$omp&  sendtasks(1:sendtasksize, 1:nsendtasks+1))
+        ! !$omp target enter data map(to: &
+        ! !$omp&  sendtasks(1:sendtasksize, 1:nsendtasks+1))
         CALL process_sendtasks(fc, nsendtasks, sendtasks)
-        !$omp target exit data map(delete: &
-        !$omp&  sendtasks(1:sendtasksize, 1:nsendtasks+1))
+        ! !$omp target exit data map(delete: &
+        ! !$omp&  sendtasks(1:sendtasksize, 1:nsendtasks+1))
 
         CALL process_mpirecvtasks(mpirecvtasks, nmpirecvtasks)
         CALL process_mpisendtasks(mpisendtasks, nmpisendtasks)
@@ -144,17 +144,17 @@ CONTAINS
         ! Includes waiting for MPI communication to finish
         CALL prepare_recvtasks(nrecvtasks, recvtasks)
 
-        !$omp target enter data map(to: &
-        !$omp&  recvtasks(1:recvtasksize, 1:nrecvtasks+1))
+        ! !$omp target enter data map(to: &
+        ! !$omp&  recvtasks(1:recvtasksize, 1:nrecvtasks+1))
         CALL process_recvtasks(ff, nrecvtasks, recvtasks)
-        !$omp target exit data map(delete: &
-        !$omp&  recvtasks(1:recvtasksize, 1:nrecvtasks+1))
+        ! !$omp target exit data map(delete: &
+        ! !$omp&  recvtasks(1:recvtasksize, 1:nrecvtasks+1))
 
-        !$omp target enter data map(to: &
-        !$omp&  selftasks(1:selftasksize, 1:nselftasks+1))
+        ! !$omp target enter data map(to: &
+        ! !$omp&  selftasks(1:selftasksize, 1:nselftasks+1))
         CALL process_selftasks(fc, ff, nselftasks, selftasks)
-        !$omp target exit data map(delete: &
-        !$omp&  selftasks(1:selftasksize, 1:nselftasks+1))
+        ! !$omp target exit data map(delete: &
+        ! !$omp&  selftasks(1:selftasksize, 1:nselftasks+1))
 
         ! At this point, one execution has been performed.
 
@@ -176,10 +176,10 @@ CONTAINS
         wptr%mpirecvtasks(:, 1:nmpirecvtasks+1) = &
             mpirecvtasks(:, 1:nmpirecvtasks+1)
 
-        !$omp target enter data map(to: &
-        !$omp&  wptr%sendtasks(1:sendtasksize, 1:nsendtasks+1), &
-        !$omp&  wptr%recvtasks(1:recvtasksize, 1:nrecvtasks+1), &
-        !$omp&  wptr%selftasks(1:selftasksize, 1:nselftasks+1))
+        ! !$omp target enter data map(to: &
+        ! !$omp&  wptr%sendtasks(1:sendtasksize, 1:nsendtasks+1), &
+        ! !$omp&  wptr%recvtasks(1:recvtasksize, 1:nrecvtasks+1), &
+        ! !$omp&  wptr%selftasks(1:selftasksize, 1:nselftasks+1))
 
         wptr%is_init = .TRUE.
 
@@ -303,7 +303,7 @@ CONTAINS
         CALL profile_range_push("process_mpirecv")
 #endif
 
-        !$omp target data use_device_addr(recvbuf)
+        ! !$omp target data use_device_addr(recvbuf)
         DO i = 1, nmpirtasks
 
             ! Getting connection information
@@ -316,7 +316,7 @@ CONTAINS
             CALL MPI_Irecv(recvbuf(offset), messagelength, mglet_mpi_real, &
                 iprocc, 1, MPI_COMM_WORLD, recvreqs(i))
         END DO
-        !$omp end target data
+        ! !$omp end target data
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_pop()
@@ -460,9 +460,9 @@ CONTAINS
 
         ASSOCIATE(fc => fc%arr, ff => ff%arr)
 
-        !$omp target teams distribute private(itask, igridf, igridc, &
-        !$omp&  ista, jsta, ksta, isto, jsto, ksto, ip3f, ip3c, &
-        !$omp&  kkf, jjf, iif, kkc, jjc, iic)
+        ! !$omp target teams distribute private(itask, igridf, igridc, &
+        ! !$omp&  ista, jsta, ksta, isto, jsto, ksto, ip3f, ip3c, &
+        ! !$omp&  kkf, jjf, iif, kkc, jjc, iic)
         DO itask = 1, nselftasks
 
             ! Unpacking the task
@@ -484,7 +484,7 @@ CONTAINS
             CALL copy_kernel(kkf, jjf, iif, kkc, jjc, iic, &
                 ff(ip3f), fc(ip3c), ista, jsta, ksta, isto, jsto, ksto)
         END DO
-        !$omp end target teams distribute
+        ! !$omp end target teams distribute
 
         END ASSOCIATE
 
@@ -501,7 +501,7 @@ CONTAINS
 
     SUBROUTINE copy_kernel(kkf, jjf, iif, kkc, jjc, iic, &
         ff, fc, ista, jsta, ksta, isto, jsto, ksto)
-        !$omp declare target
+        ! !$omp declare target
 
         ! Subroutine arguments
         INTEGER(intk), INTENT(in) :: kkf, jjf, iif
@@ -514,7 +514,7 @@ CONTAINS
         ! Local variables
         INTEGER(intk) :: i, j, k, ic, jc, kc
 
-        !$omp parallel do collapse(3) private(i, j, k, ic, jc, kc)
+        ! !$omp parallel do collapse(3) private(i, j, k, ic, jc, kc)
         DO i = 1, iif
             DO j = 1, jjf
                 DO k = 1, kkf
@@ -535,7 +535,7 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        ! !$omp end parallel do
     END SUBROUTINE copy_kernel
 
 
@@ -554,7 +554,7 @@ CONTAINS
         CALL profile_range_push("process_mpisend")
 #endif
 
-        !$omp target data use_device_addr(sendbuf)
+        ! !$omp target data use_device_addr(sendbuf)
         DO i = 1, nmpistasks
 
             ! Getting connection information
@@ -568,7 +568,7 @@ CONTAINS
             CALL MPI_Isend(sendbuf(idx_sendbuf), messagelength, &
                 mglet_mpi_real, iprocf, 1, MPI_COMM_WORLD, sendreqs(i))
         END DO
-        !$omp end target data
+        ! !$omp end target data
 
         ! Checking for the dummy entry at position (end+1)
         IF (mpistasks(1, nmpistasks+1) /= -1) THEN
@@ -603,8 +603,8 @@ CONTAINS
 
         ASSOCIATE(coarse => fc%arr)
 
-        !$omp target teams distribute private(itask, ii, jj, kk, ip3, &
-        !$omp&  ista, jsta, ksta, isto, jsto, ksto, idx1, idx2, igridc)
+        ! !$omp target teams distribute private(itask, ii, jj, kk, ip3, &
+        ! !$omp&  ista, jsta, ksta, isto, jsto, ksto, idx1, idx2, igridc)
         DO itask = 1, nstasks
 
             ! Unpacking the task
@@ -626,7 +626,7 @@ CONTAINS
                 coarse(ip3), ista, jsta, ksta, isto, jsto, ksto)
 
         END DO
-        !$omp end target teams distribute
+        ! !$omp end target teams distribute
 
         END ASSOCIATE
 
@@ -638,7 +638,7 @@ CONTAINS
 
     SUBROUTINE write_buffer(kk, jj, ii, buf, fc, ista, jsta, ksta, &
             isto, jsto, ksto)
-        !$omp declare target
+        ! !$omp declare target
 
         ! Subroutine arguments
         INTEGER(intk), INTENT(in) :: kk, jj, ii
@@ -656,7 +656,7 @@ CONTAINS
         jjc = jsto - jsta + 1
         kkc = ksto - ksta + 1
 
-        !$omp parallel do collapse(3) private(i, j, k, idx)
+        ! !$omp parallel do collapse(3) private(i, j, k, idx)
         DO i = ista, isto
             DO j = jsta, jsto
                 DO k = ksta, ksto
@@ -665,7 +665,7 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        ! !$omp end parallel do
     END SUBROUTINE write_buffer
 
 
@@ -802,8 +802,8 @@ CONTAINS
 
         ASSOCIATE(fine => ff%arr)
 
-        !$omp target teams distribute private(itask, ii, jj, kk, ip3, &
-        !$omp&  igridf, idx, len)
+        ! !$omp target teams distribute private(itask, ii, jj, kk, ip3, &
+        ! !$omp&  igridf, idx, len)
         DO itask = 1, nrtasks
 
             ! Unpacking the task
@@ -819,7 +819,7 @@ CONTAINS
             CALL write_fine(kk, jj, ii, fine(ip3), len, recvbuf(idx:idx+len-1))
 
         END DO
-        !$omp end target teams distribute
+        ! !$omp end target teams distribute
 
         END ASSOCIATE
 
@@ -830,7 +830,7 @@ CONTAINS
 
 
     SUBROUTINE write_fine(kk, jj, ii, fff, len, fc)
-        !$omp declare target
+        ! !$omp declare target
 
         ! Subroutine arguments
         INTEGER(intk), INTENT(in) :: kk, jj, ii
@@ -847,7 +847,7 @@ CONTAINS
         jjc = jj/2
         iic = ii/2
 
-        !$omp parallel do collapse(3) private(i, j, k, idx, kc, jc, ic)
+        ! !$omp parallel do collapse(3) private(i, j, k, idx, kc, jc, ic)
         DO i = 1, ii
             DO j = 1, jj
                 DO k = 1, kk
@@ -861,7 +861,7 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        ! !$omp end parallel do
     END SUBROUTINE write_fine
 
 
@@ -904,7 +904,7 @@ CONTAINS
 
         CALL dummy%init("DUMMY")
 
-        !$omp target enter data map(to: dummy%arr)
+        ! !$omp target enter data map(to: dummy%arr)
 
         is_recording = .TRUE.
 
@@ -915,7 +915,7 @@ CONTAINS
 
         is_recording = .FALSE.
 
-        !$omp target exit data map(delete: dummy%arr)
+        ! !$omp target exit data map(delete: dummy%arr)
 
         CALL dummy%finish()
     END SUBROUTINE run_recording_pass
@@ -938,10 +938,10 @@ CONTAINS
         ! Deallocate the workpackage components for each level
         DO ilevel = minlevel+1, maxlevel
             IF (workrecords(ilevel)%is_init) THEN
-                !$omp target exit data map(delete: &
-                !$omp&  workrecords(ilevel)%sendtasks(:, :), &
-                !$omp&  workrecords(ilevel)%recvtasks(:, :), &
-                !$omp&  workrecords(ilevel)%selftasks(:, :))
+                ! !$omp target exit data map(delete: &
+                ! !$omp&  workrecords(ilevel)%sendtasks(:, :), &
+                ! !$omp&  workrecords(ilevel)%recvtasks(:, :), &
+                ! !$omp&  workrecords(ilevel)%selftasks(:, :))
 
                 DEALLOCATE(workrecords(ilevel)%sendtasks)
                 DEALLOCATE(workrecords(ilevel)%recvtasks)

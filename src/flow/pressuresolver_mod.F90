@@ -15,6 +15,19 @@ MODULE pressuresolver_mod
     PRIVATE
 
     INTERFACE
+        SUBROUTINE maxabscal_backend(maxabsgrid, phi, mygrids_, nmygrids_, &
+                kkk_, jjj_, iii_, ip3d_) BIND(C, name="maxabscal_c")
+            USE precision_mod, ONLY: realk, intk
+            REAL(realk), INTENT(inout) :: maxabsgrid(:)
+            REAL(realk), INTENT(in) :: phi(:)
+            INTEGER(intk), INTENT(in) :: mygrids_(:)
+            INTEGER(intk), VALUE, INTENT(in) :: nmygrids_
+            INTEGER(intk), INTENT(in) :: kkk_(:)
+            INTEGER(intk), INTENT(in) :: jjj_(:)
+            INTEGER(intk), INTENT(in) :: iii_(:)
+            INTEGER(intk), INTENT(in) :: ip3d_(:)
+        END SUBROUTINE maxabscal_backend
+
         SUBROUTINE accumulate_pcorr_backend(dp, hilf) &
                 BIND(C, name="accumulate_pcorr_c")
             USE precision_mod, ONLY: realk
@@ -221,6 +234,9 @@ CONTAINS
             CALL ftoc(ilevel, rhs, rhs, 'R')
         END DO
 
+        ! TODO(offload): Remove once surrounding subroutines are offloaded
+        CALL map_arr_to_device(rhs, message="to:rhs%arr")
+
         ! For debug logging
         IF (loglevel >= 3) THEN
             CALL maxabscal(maxrhs, maxrhslvl, rhs)
@@ -234,7 +250,7 @@ CONTAINS
         END IF
 
         ! TODO(offload): Remove once surrounding subroutines are offloaded
-        CALL map_arr_to_device(rhs, message="to:rhs%arr")
+        ! CALL map_arr_to_device(rhs, message="to:rhs%arr")
 
         ipc = 0
         outer: DO ipcount = 1, nouter
@@ -249,7 +265,7 @@ CONTAINS
             CALL stop_timer(322)
 
             ! TODO(offload): Remove once surrounding subroutines offloaded
-            CALL map_arr_from_device(hilf, message="from:hilf%arr")
+            ! CALL map_arr_from_device(hilf, message="from:hilf%arr")
 
             ! --- intermediate state ---
             ! every grid level has an inner solution
@@ -267,7 +283,7 @@ CONTAINS
             END DO
 
             ! TODO(offload): Remove once surrounding subroutines are offloaded
-            CALL map_arr_to_device(hilf, message="to:hilf%arr")
+            ! CALL map_arr_to_device(hilf, message="to:hilf%arr")
 
             ! --- intermediate state ---
             ! every grid level has the best solution
@@ -279,27 +295,35 @@ CONTAINS
             ! either.
             CALL conn(layers=1, s1=hilf)
 
-            ! res <- laplace(hilf)
-            CALL laplacephi(res, hilf)
-            ! rhs <- rhs + res
-            CALL rescal(rhs, res)
             ! TODO(offload): Remove once surrounding subroutines are offloaded
             CALL map_arr_from_device(rhs, message="from:rhs%arr")
+
+            ! res <- laplace(hilf)
+            CALL laplacephi(res, hilf)
+
+            CALL map_arr_to_device(res, rhs, message="to:res|rhs%arr")
+            ! rhs <- rhs + res
+            CALL rescal(rhs, res)
+            CALL map_arr_from_device(rhs, res, message="from:res|rhs%arr")
+            ! TODO(offload): Remove once surrounding subroutines are offloaded
+            ! CALL map_arr_from_device(rhs, message="from:rhs%arr")
+
+            ! TODO(offload): Remove once surrounding subroutines are offloaded
+            CALL map_arr_to_device(rhs, message="to:rhs%arr")
 
             DO ilevel = maxlevel, minlevel+1, -1
                 CALL ftoc(ilevel, rhs, rhs, 'R')
             END DO
 
-            ! TODO(offload): Remove once surrounding subroutines are offloaded
-            CALL map_arr_to_device(rhs, message="to:rhs%arr")
-
             ! Max of RHS scaled according to levels
             CALL maxabscal(maxrhs, maxrhslvl, rhs)
 
             ! dp = dp + hilf
+            CALL map_arr_to_device(dp, hilf, message="to:dp%arr|hilf%arr")
             CALL accumulate_pcorr(dp, hilf)
             CALL set_field_arr(hilf, 0.0_realk, device=.TRUE.)
             ipc = ipc + ninner
+            CALL map_arr_from_device(dp, hilf, message="from:dp%arr|hilf%arr")
 
             ! Pressure solver debug logging
             IF (loglevel >= 2) THEN
@@ -348,7 +372,7 @@ CONTAINS
         END DO
 
         ! TODO(offload): Remove once surrounding subroutines are offloaded
-        CALL map_arr_from_device(dp, message="from:dp%arr")
+        ! CALL map_arr_from_device(dp, message="from:dp%arr")
 
         ! Pressure correction: P = P + dtrk/rho*DP
         ! Velocity fields are modified and become solenoidal based on DP
@@ -550,7 +574,7 @@ CONTAINS
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("sipiter1_hp")
 #endif
-        !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
+        ! !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
         DO i = 1, nmygridslvl(ilevel)
             igrid = mygridslvl(i, ilevel)
             CALL get_mgdims(kk, jj, ii, igrid)
@@ -559,7 +583,7 @@ CONTAINS
             CALL sipiter1_hp(kk, jj, ii, rhs(ip3), res(ip3), lw(ip3), ls(ip3), &
                 lb(ip3), lpr(ip3), mip(ip3), idx(ip3))
         END DO
-        !$omp end target teams distribute
+        ! !$omp end target teams distribute
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_pop()
 #endif
@@ -625,7 +649,7 @@ CONTAINS
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("sipiter2_hp")
 #endif
-        !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
+        ! !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
         DO i = 1, nmygridslvl(ilevel)
             igrid = mygridslvl(i, ilevel)
             CALL get_mgdims(kk, jj, ii, igrid)
@@ -634,7 +658,7 @@ CONTAINS
             CALL sipiter2_hp(kk, jj, ii, dp(ip3), res(ip3), sipue(ip3), &
                 sipun(ip3), siput(ip3), mip(ip3), idx(ip3))
         END DO
-        !$omp end target teams distribute
+        ! !$omp end target teams distribute
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_pop()
 #endif
@@ -650,17 +674,48 @@ CONTAINS
 
         ! Local variables
         REAL(realk) :: maxabsgrid(nmygrids)
-        INTEGER(intk) :: imygrid, igrid, ilevel, ip3
+        INTEGER(intk) :: imygrid, igrid, ilevel
         INTEGER(intk) :: kk, jj, ii
-
-        maxabs = 0.0
-        maxabslevel = 0.0
-
-        ASSOCIATE(phi => phi_f%arr)
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("maxabscal")
 #endif
+
+        maxabs = 0.0
+        maxabslevel = 0.0
+
+#ifdef _MGLET_USE_BACKEND_
+        !$omp target data map(tofrom: maxabsgrid)
+        CALL maxabscal_backend(maxabsgrid, phi_f%arr, mygrids, nmygrids, kkk, &
+            jjj, iii, ip3d)
+        !$omp end target data
+
+#else
+        CALL maxabscal_impl(maxabsgrid, phi_f%arr)
+#endif
+
+        DO imygrid = 1, nmygrids
+            igrid = mygrids(imygrid)
+            ilevel = level(igrid)
+            maxabs = MAX(ABS(maxabsgrid(imygrid)*(2.0**(maxlevel-ilevel))), &
+                maxabs)
+            maxabslevel(ilevel) = MAX(maxabslevel(ilevel), maxabsgrid(imygrid))
+        END DO
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_pop()
+#endif
+    END SUBROUTINE maxabscal
+
+
+    SUBROUTINE maxabscal_impl(maxabsgrid, phi)
+        ! Subroutine arguments
+        REAL(realk), CONTIGUOUS, INTENT(inout) :: maxabsgrid(:)
+        REAL(realk), CONTIGUOUS, INTENT(in) :: phi(:)
+
+        ! Local variables
+        INTEGER(intk) :: imygrid, igrid, ip3
+        INTEGER(intk) :: kk, jj, ii
 
         !$omp target teams distribute private(imygrid, igrid, kk, jj, ii, ip3) &
         !$omp& map(from: maxabsgrid)
@@ -671,26 +726,12 @@ CONTAINS
             CALL maxabscal_grid(kk, jj, ii, maxabsgrid(imygrid), phi(ip3))
         END DO
         !$omp end target teams distribute
-
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-        CALL profile_range_pop()
-#endif
-
-        END ASSOCIATE
-
-        DO imygrid = 1, nmygrids
-            igrid = mygrids(imygrid)
-            ilevel = level(igrid)
-            maxabs = MAX(ABS(maxabsgrid(imygrid)*(2.0**(maxlevel-ilevel))), &
-                maxabs)
-            maxabslevel(ilevel) = MAX(maxabslevel(ilevel), maxabsgrid(imygrid))
-        END DO
-    END SUBROUTINE maxabscal
+    END SUBROUTINE maxabscal_impl
 
 
     PURE SUBROUTINE maxabscal_grid(kk, jj, ii, maxabs, phi)
         ! Subroutine arguments
-        !$omp declare target
+        ! !$omp declare target
         INTEGER(intk), INTENT(in) :: kk, jj, ii
         REAL(realk), INTENT(out) :: maxabs
         REAL(realk), INTENT(in) :: phi(kk, jj, ii)
@@ -699,7 +740,7 @@ CONTAINS
         INTEGER(intk) :: k, j, i
 
         maxabs = 0.0
-        !$omp parallel do collapse(3) private(i, j, k) reduction(max:maxabs)
+        ! !$omp parallel do collapse(3) private(i, j, k) reduction(max:maxabs)
         DO i = 3, ii-2
             DO j = 3, jj-2
                 DO k = 3, kk-2
@@ -707,7 +748,7 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        ! !$omp end parallel do
     END SUBROUTINE maxabscal_grid
 
 
@@ -727,7 +768,7 @@ CONTAINS
         CALL rescal_backend(rhs_f%arr, res_f%arr, nmygrids, mygrids, kkk, &
             jjj, iii, ip3d)
 #else
-        CALL rescal_impl#(rhs_f%arr, res_f%arr)
+        CALL rescal_impl(rhs_f%arr, res_f%arr)
 #endif
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
@@ -749,7 +790,7 @@ CONTAINS
         INTEGER(intk) :: i, igrid
         INTEGER(intk) :: kk, jj, ii, ip3
 
-        !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
+        ! !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
         DO i = 1, nmygrids
             igrid = mygrids(i)
             CALL get_mgdims(kk, jj, ii, igrid)
@@ -757,12 +798,12 @@ CONTAINS
 
             CALL rescal_grid(kk, jj, ii, rhs(ip3), res(ip3))
         END DO
-        !$omp end target teams distribute
+        ! !$omp end target teams distribute
     END SUBROUTINE rescal_impl
 
 
     PURE SUBROUTINE rescal_grid(kk, jj, ii, rhs, res)
-        !$omp declare target
+        ! !$omp declare target
         ! Subroutine arguments
         INTEGER(intk), INTENT(in) :: kk, jj, ii
         REAL(realk), INTENT(inout) :: rhs(kk, jj, ii)
@@ -772,7 +813,7 @@ CONTAINS
         INTEGER(intk) :: k, j, i
 
         ! TODO: Check if indices can be extended
-        !$omp parallel do collapse(3) private(i, j, k)
+        ! !$omp parallel do collapse(3) private(i, j, k)
         DO i = 3, ii-2
             DO j = 3, jj-2
                 DO k = 3, kk-2
@@ -780,7 +821,7 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        ! !$omp end parallel do
     END SUBROUTINE rescal_grid
 
 
@@ -957,10 +998,10 @@ CONTAINS
 
         n = SIZE(dp)
 
-        !$omp target teams loop
+        ! !$omp target teams loop
         DO i = 1, n
             dp(i) = dp(i) + hilf(i)
         END DO
-        !$omp end target teams loop
+        ! !$omp end target teams loop
     END SUBROUTINE accumulate_pcorr_impl
 END MODULE pressuresolver_mod

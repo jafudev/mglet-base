@@ -39,7 +39,7 @@ CONTAINS
         END IF
 
         IF (device2) THEN
-            CALL parent2(ilevel, v1, v2, v3, s1, s2, s3, normal)
+            CALL parent1(ilevel, v1, v2, v3, s1, s2, s3, normal)
         ELSE
             CALL parent1(ilevel, v1, v2, v3, s1, s2, s3, normal)
         END IF
