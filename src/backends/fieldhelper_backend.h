@@ -8,6 +8,6 @@
 namespace mglet::backend
 {
 
-void set_field_arr_realk_backend(FArrView<mgletreal> arr, mgletreal val);
+void set_field_arr_realk_backend(FArrView<mgletreal> arr_view, mgletreal val);
 
 }

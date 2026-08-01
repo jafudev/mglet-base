@@ -8,7 +8,8 @@ MODULE grids_mod
     PRIVATE
 
     TYPE(gridinfo_t), ALLOCATABLE, TARGET :: gridinfo(:)
-    !$omp declare target(gridinfo)
+    INTEGER(intk), ALLOCATABLE, PROTECTED :: kkk(:), jjj(:), iii(:)
+    !$omp declare target(gridinfo, kkk, jjj, iii)
     TYPE(bcond_t), ALLOCATABLE, TARGET :: front(:)
     TYPE(bcond_t), ALLOCATABLE, TARGET :: back(:)
     TYPE(bcond_t), ALLOCATABLE, TARGET :: right(:)
@@ -62,7 +63,7 @@ MODULE grids_mod
     ! Public data arrays
     PUBLIC :: ngrid, minlevel, maxlevel, maxgrdsoflvl, noflevel, igrdoflevel, &
         nmygrids, mygrids, nmygridslvl, mygridslvl, nboconds, itypboconds, &
-        idprocofgrd
+        idprocofgrd, kkk, jjj, iii
 
 CONTAINS
 
@@ -80,8 +81,9 @@ CONTAINS
         CALL fort7%get_value("/io/grids", filename, "grids.h5")
         CALL hdf5common_open(filename, "r", file_id)
 
-        CALL read_gridinfo(file_id, gridinfo, realprms, intprms, ngrid)
+        CALL read_gridinfo(file_id, gridinfo, realprms, intprms, ngrid, kkk, jjj, iii)
         !$omp target enter data map(always, to: gridinfo, realprms, intprms)
+        !$omp target enter data map(always, to: kkk, jjj, iii)
         !$omp target update to(ngrid)
 
         ALLOCATE(front(ngrid))

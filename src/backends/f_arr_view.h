@@ -24,10 +24,10 @@ class FArrView
             MGLET_ERRR();
         }
 
-        host_ptr_ = static_cast<mgletreal*>(arr->base_addr);
+        host_ptr_ = static_cast<T*>(arr->base_addr);
 
         const auto device_num_ = omp_get_default_device();
-        device_ptr_ = static_cast<mgletreal*>(omp_get_mapped_ptr(host_ptr_, device_num_));
+        device_ptr_ = static_cast<T*>(omp_get_mapped_ptr(host_ptr_, device_num_));
         if (device_ptr_ == nullptr)
         {
             MGLET_ERRR();

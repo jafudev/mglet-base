@@ -13,6 +13,7 @@ do {                                                                           \
     if (rt != cudaSuccess) {                                                   \
         std::cout << "CUDA API call failure: " << rt << " at " << #func        \
             << std::endl;                                                      \
+        std::cout << cudaGetErrorString(rt) << std::endl;                      \
         MGLET_ERRR();                                                          \
     }                                                                          \
 } while (0)

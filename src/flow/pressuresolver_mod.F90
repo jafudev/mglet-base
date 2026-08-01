@@ -21,6 +21,19 @@ MODULE pressuresolver_mod
             REAL(realk), INTENT(inout) :: dp(:)
             REAL(realk), INTENT(in) :: hilf(:)
         END SUBROUTINE accumulate_pcorr_backend
+
+        SUBROUTINE rescal_backend(rhs, res, nmygrids_, mygrids_, kkk_, jjj_, &
+                iii_, idim3d_) BIND(C, name="rescal_c")
+            USE precision_mod, ONLY: realk, intk
+            REAL(realk), INTENT(inout) :: rhs(:)
+            REAL(realk), INTENT(in) :: res(:)
+            INTEGER(intk), VALUE, INTENT(in) :: nmygrids_
+            INTEGER(intk), INTENT(in) :: mygrids_(:)
+            INTEGER(intk), INTENT(in) :: kkk_(:)
+            INTEGER(intk), INTENT(in) :: jjj_(:)
+            INTEGER(intk), INTENT(in) :: iii_(:)
+            INTEGER(intk), INTENT(in) :: idim3d_(:)
+        END SUBROUTINE rescal_backend
     END INTERFACE
 
     ! Type of pressure solver
@@ -704,14 +717,38 @@ CONTAINS
         TYPE(field_t), INTENT(in) :: res_f
 
         ! Local variables
-        INTEGER(intk) :: i, igrid
-        INTEGER(intk) :: kk, jj, ii, ip3
-
-        ASSOCIATE(rhs => rhs_f%arr, res => res_f%arr)
+        ! none...
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("rescal")
 #endif
+
+#ifdef _MGLET_USE_BACKEND_
+        CALL rescal_backend(rhs_f%arr, res_f%arr, nmygrids, mygrids, kkk, &
+            jjj, iii, ip3d)
+#else
+        CALL rescal_impl#(rhs_f%arr, res_f%arr)
+#endif
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_pop()
+#endif
+
+        ASSOCIATE(rhs => rhs_f%arr, res => res_f%arr)
+
+        END ASSOCIATE
+    END SUBROUTINE rescal
+
+
+    SUBROUTINE rescal_impl(rhs, res)
+        ! Subroutine arguments
+        REAL(realk), CONTIGUOUS, INTENT(inout) :: rhs(:)
+        REAL(realk), CONTIGUOUS, INTENT(in) :: res(:)
+
+        ! Local variables
+        INTEGER(intk) :: i, igrid
+        INTEGER(intk) :: kk, jj, ii, ip3
+
         !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
         DO i = 1, nmygrids
             igrid = mygrids(i)
@@ -721,11 +758,7 @@ CONTAINS
             CALL rescal_grid(kk, jj, ii, rhs(ip3), res(ip3))
         END DO
         !$omp end target teams distribute
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-        CALL profile_range_pop()
-#endif
-        END ASSOCIATE
-    END SUBROUTINE rescal
+    END SUBROUTINE rescal_impl
 
 
     PURE SUBROUTINE rescal_grid(kk, jj, ii, rhs, res)

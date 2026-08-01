@@ -27,9 +27,9 @@ __global__ void set_field_arr_realk_kernel(mgletreal* __restrict__ arr, std::siz
 
 } // namespace
 
-void set_field_arr_realk_backend(FArrView<mgletreal> arr, mgletreal val)
+void set_field_arr_realk_backend(FArrView<mgletreal> arr_view, mgletreal val)
 {
-    const auto n = arr.flat_size();
+    const auto n = arr_view.flat_size();
 
     if (n == 0)
     {
@@ -39,8 +39,8 @@ void set_field_arr_realk_backend(FArrView<mgletreal> arr, mgletreal val)
     const unsigned block_size = 256;
     const unsigned grid_size = (n + block_size - 1) / block_size;
 
-    set_field_arr_realk_kernel<<<grid_size, block_size>>>(arr.device_ptr(), n, val);
-
+    set_field_arr_realk_kernel<<<grid_size, block_size>>>(arr_view.device_ptr(), n, val);
+    CUDA_CHECK(cudaDeviceSynchronize());
     CUDA_CHECK(cudaGetLastError());
 }
 

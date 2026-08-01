@@ -58,7 +58,8 @@ MODULE gridio_mod
         write_gridinfo, write_bcondinfo
 
 CONTAINS
-    SUBROUTINE read_gridinfo(parent_id, gridinfo, realprms, intprms, ngrid)
+    SUBROUTINE read_gridinfo(parent_id, gridinfo, realprms, intprms, ngrid, &
+            kkk, jjj, iii)
         USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_LOC, C_PTR, C_NULL_PTR
 
         ! Subroutine arguments
@@ -67,6 +68,7 @@ CONTAINS
         REAL(realk), ALLOCATABLE, INTENT(inout) :: realprms(:)
         INTEGER(intk), ALLOCATABLE, INTENT(inout) :: intprms(:)
         INTEGER(intk), INTENT(out) :: ngrid
+        INTEGER(intk), ALLOCATABLE, INTENT(inout) :: kkk(:), jjj(:), iii(:)
 
         ! Local variables
         INTEGER(HID_T) :: dset_id, filespace_id, memspace_id, gridinfo_h5type
@@ -75,7 +77,7 @@ CONTAINS
         TYPE(MPI_datatype) :: gridinfo_mpitype
         TYPE(C_PTR) :: ptr
         LOGICAL :: attribute_exists
-        INTEGER(intk) :: nrealprm, nintprm
+        INTEGER(intk) :: nrealprm, nintprm, i
 
         ! First we must figure out how many grids there are, i.e. the shape
         ! of the 'GRIDINFO'-table
@@ -165,6 +167,13 @@ CONTAINS
         CALL MPI_Bcast(gridinfo, INT(ngrid, int32), gridinfo_mpitype, 0, &
             MPI_COMM_WORLD)
         CALL MPI_Type_free(gridinfo_mpitype)
+
+        ALLOCATE(kkk(ngrid), jjj(ngrid), iii(ngrid))
+        DO i = 1, ngrid
+            kkk(i) = gridinfo(i)%kk
+            jjj(i) = gridinfo(i)%jj
+            iii(i) = gridinfo(i)%ii
+        END DO
     END SUBROUTINE read_gridinfo
 
 
