@@ -13,14 +13,16 @@ template <class T>
 class MappedArrView
 {
   public:
-    MappedArrView(CFI_cdesc_t* arr)
+    MappedArrView(CFI_cdesc_t* arr, const char* file = __builtin_FILE(), int line = __builtin_LINE())
     {
         if (arr == nullptr)
         {
+            print_location("CFI descriptor is nullptr.", file, line);
             MGLET_ERRR();
         }
         if (arr->base_addr == nullptr)
         {
+            print_location("CFI base_addr is nullptr.", file, line);
             MGLET_ERRR();
         }
 
@@ -30,11 +32,13 @@ class MappedArrView
         device_ptr_ = static_cast<T*>(omp_get_mapped_ptr(host_ptr_, device_num_));
         if (device_ptr_ == nullptr)
         {
+            print_location("CFI array is not mapped by OpenMP.", file, line);
             MGLET_ERRR();
         }
 
         if (arr->rank <= 0)
         {
+            print_location("CFI array does not have rank>=0.", file, line);
             MGLET_ERRR();
         }
         flat_size_ = 1;
