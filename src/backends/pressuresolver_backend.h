@@ -30,4 +30,21 @@ void rescal_backend(
     const FArrView<mgletint> iii,
     const FArrView<mgletint> ip3d);
 
+void sipiter1_hyperplane_level_backend(
+    mgletint ilevel,
+    FArrView<mgletreal>(res),
+    const FArrView<mgletreal> rhs,
+    const FArrView<mgletreal> siplw,
+    const FArrView<mgletreal> sipls,
+    const FArrView<mgletreal> siplb,
+    const FArrView<mgletreal> siplpr,
+    const FArrView<mgletifk> miphp,
+    const FArrView<mgletifk> idxhp,
+    mgletint nmygridsonlvl,
+    const FArrView<mgletint> mygridsonlvl,
+    const FArrView<mgletint> kkk,
+    const FArrView<mgletint> jjj,
+    const FArrView<mgletint> iii,
+    const FArrView<mgletint> ip3d);
+
 } // namespace mglet::backend

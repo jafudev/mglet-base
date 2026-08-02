@@ -1,6 +1,8 @@
 #ifndef __MGLET_PRECISION_H__
 #define __MGLET_PRECISION_H__
 
+#include <cstdint>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -18,7 +20,7 @@ typedef float mgletreal;
 #endif
 
 #ifdef _MGLET_INT64_
-typedef long long mgletint;
+typedef std::int64_t mgletint;
 
 // If clang is used as a "companion compiler" to NAG nagfor, this will fail or
 // not work. I am not sure if that is supported, though. Usually we use GCC
@@ -34,7 +36,13 @@ typedef long long mgletint;
 #endif
 
 #else
-typedef int mgletint;
+typedef std::int32_t mgletint;
+
+#ifdef _MGLET_IFK64_
+typedef std::int64_t mgletifk;
+#else
+typedef std::int32_t mgletifk;
+#endif
 
 // If clang is used as a "companion compiler" to NAG nagfor, this will fail or
 // not work. I am not sure if that is supported, though. Usually we use GCC

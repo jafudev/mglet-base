@@ -12,7 +12,10 @@ extern "C"
 #include "mglet_precision.h"
 #include "pressuresolver_backend.h"
 
-extern "C" void maxabscal_c(
+extern "C"
+{
+
+void maxabscal_c(
     CFI_cdesc_t* maxabsgrid,
     CFI_cdesc_t* phi,
     CFI_cdesc_t* mygrids,
@@ -33,7 +36,7 @@ extern "C" void maxabscal_c(
         mglet::backend::FArrView<mgletint>(idim3d));
 }
 
-extern "C" void accumulate_pcorr_c(CFI_cdesc_t* dp, CFI_cdesc_t* hilf)
+void accumulate_pcorr_c(CFI_cdesc_t* dp, CFI_cdesc_t* hilf)
 {
     const auto dp_view = mglet::backend::FArrView<mgletreal>(dp);
     const auto hilf_view = mglet::backend::FArrView<mgletreal>(hilf);
@@ -41,7 +44,7 @@ extern "C" void accumulate_pcorr_c(CFI_cdesc_t* dp, CFI_cdesc_t* hilf)
     mglet::backend::accumulate_pcorr_backend(dp_view, hilf_view);
 }
 
-extern "C" void rescal_c(
+void rescal_c(
     CFI_cdesc_t* rhs,
     CFI_cdesc_t* res,
     mgletint nmygrids,
@@ -61,6 +64,42 @@ extern "C" void rescal_c(
 
     mglet::backend::rescal_backend(
         rhs_view, res_view, nmygrids, mygrids_view, kkk_view, jjj_view, iii_view, idim3d_view);
+}
+
+void sipiter1_hyperplane_level_c(
+    mgletint ilevel,
+    CFI_cdesc_t* res,
+    CFI_cdesc_t* rhs,
+    CFI_cdesc_t* siplw,
+    CFI_cdesc_t* sipls,
+    CFI_cdesc_t* siplb,
+    CFI_cdesc_t* siplpr,
+    CFI_cdesc_t* miphp,
+    CFI_cdesc_t* idxhp,
+    mgletint nmygridsonlvl,
+    CFI_cdesc_t* mygridsonlvl,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* ip3d)
+{
+    mglet::backend::sipiter1_hyperplane_level_backend(
+        ilevel,
+        mglet::backend::FArrView<mgletreal>(res),
+        mglet::backend::FArrView<mgletreal>(rhs),
+        mglet::backend::FArrView<mgletreal>(siplw),
+        mglet::backend::FArrView<mgletreal>(sipls),
+        mglet::backend::FArrView<mgletreal>(siplb),
+        mglet::backend::FArrView<mgletreal>(siplpr),
+        mglet::backend::FArrView<mgletifk>(miphp),
+        mglet::backend::FArrView<mgletifk>(idxhp),
+        nmygridsonlvl,
+        mglet::backend::FArrView<mgletint>(mygridsonlvl),
+        mglet::backend::FArrView<mgletint>(kkk),
+        mglet::backend::FArrView<mgletint>(jjj),
+        mglet::backend::FArrView<mgletint>(iii),
+        mglet::backend::FArrView<mgletint>(ip3d));
+}
 }
 
 #endif // _MGLET_USE_BACKEND_

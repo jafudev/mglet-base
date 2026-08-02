@@ -47,6 +47,28 @@ MODULE pressuresolver_mod
             INTEGER(intk), INTENT(in) :: iii_(:)
             INTEGER(intk), INTENT(in) :: idim3d_(:)
         END SUBROUTINE rescal_backend
+
+        SUBROUTINE sipiter1_hyperplane_level_backend(ilevel, res, rhs, &
+                siplw, sipls, siplb, siplpr, miphp, idxhp, nmygridsonlvl, &
+                mygridsonlvl_, kkk_, jjj_, iii_, ip3d_) &
+                BIND(C, name="sipiter1_hyperplane_level_c")
+            USE precision_mod, ONLY: realk, intk, ifk
+            INTEGER(intk), VALUE, INTENT(in) :: ilevel
+            REAL(realk), INTENT(inout) :: res(:)
+            REAL(realk), INTENT(in) :: rhs(:)
+            REAL(realk), INTENT(in) :: siplw(:)
+            REAL(realk), INTENT(in) :: sipls(:)
+            REAL(realk), INTENT(in) :: siplb(:)
+            REAL(realk), INTENT(in) :: siplpr(:)
+            INTEGER(ifk), INTENT(in) :: miphp(:)
+            INTEGER(ifk), INTENT(in) :: idxhp(:)
+            INTEGER(intk), VALUE, INTENT(in) :: nmygridsonlvl
+            INTEGER(intk), INTENT(in) :: mygridsonlvl_(:)
+            INTEGER(intk), INTENT(in) :: kkk_(:)
+            INTEGER(intk), INTENT(in) :: jjj_(:)
+            INTEGER(intk), INTENT(in) :: iii_(:)
+            INTEGER(intk), INTENT(in) :: ip3d_(:)
+        END SUBROUTINE sipiter1_hyperplane_level_backend
     END INTERFACE
 
     ! Type of pressure solver
@@ -492,8 +514,10 @@ CONTAINS
             CALL sipiter1_classic_level(ilevel, res, rhs, siplw, sipls, siplb, &
                 siplpr)
         ELSE
+            CALL map_arr_to_device(res, rhs)
             CALL sipiter1_hyperplane_level(ilevel, res, rhs, siplw, sipls, &
                 siplb, siplpr)
+            CALL map_arr_from_device(res, rhs)
         END IF
 
         IF (iloop < ninner) THEN
@@ -558,37 +582,51 @@ CONTAINS
         TYPE(field_t), INTENT(in) :: siplpr
 
         ! Local variables
-        INTEGER(intk) :: i, igrid
-        INTEGER(intk) :: kk, jj, ii, ip3
-
-        ASSOCIATE( &
-            lw => siplw%arr, &
-            ls => sipls%arr, &
-            lb => siplb%arr, &
-            lpr => siplpr%arr, &
-            res => res_f%arr, &
-            rhs => rhs_f%arr, &
-            mip => mip_hp_f%arr, &
-            idx => idx_hp_f%arr)
+        ! none...
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("sipiter1_hp")
 #endif
+
+#ifdef _MGLET_USE_BACKEND_
+        CALL sipiter1_hyperplane_level_backend(ilevel, res_f%arr, rhs_f%arr, &
+            siplw%arr, sipls%arr, siplb%arr, siplpr%arr, mip_hp_f%arr, &
+            idx_hp_f%arr, nmygridslvl(ilevel), mygridslvl(:, ilevel), &
+            kkk, jjj, iii, ip3d)
+#else
+        CALL sipiter1_hyperplane_level_impl(ilevel, res_f%arr, rhs_f%arr, &
+            siplw%arr, sipls%arr, siplb%arr, siplpr%arr, &
+            mip_hp_f%arr, idx_hp_f%arr)
+#endif
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_pop()
+#endif
+    END SUBROUTINE sipiter1_hyperplane_level
+
+
+    SUBROUTINE sipiter1_hyperplane_level_impl(ilevel, res, rhs, siplw, sipls, siplb, siplpr, mip, idx)
+        ! Subroutine arguments
+        INTEGER(intk), INTENT(in) :: ilevel
+        REAL(realk), CONTIGUOUS, INTENT(inout) :: res(:)
+        REAL(realk), CONTIGUOUS, DIMENSION(:), INTENT(in) :: rhs, siplw, sipls, siplb, siplpr
+        INTEGER(ifk), CONTIGUOUS, DIMENSION(:), INTENT(in) :: mip, idx
+
+        ! Local variables
+        INTEGER(intk) :: i, igrid
+        INTEGER(intk) :: kk, jj, ii, ip3
+
         ! !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
         DO i = 1, nmygridslvl(ilevel)
             igrid = mygridslvl(i, ilevel)
             CALL get_mgdims(kk, jj, ii, igrid)
             CALL get_ip3(ip3, igrid)
 
-            CALL sipiter1_hp(kk, jj, ii, rhs(ip3), res(ip3), lw(ip3), ls(ip3), &
-                lb(ip3), lpr(ip3), mip(ip3), idx(ip3))
+            CALL sipiter1_hp(kk, jj, ii, rhs(ip3), res(ip3), siplw(ip3), &
+                sipls(ip3), siplb(ip3), siplpr(ip3), mip(ip3), idx(ip3))
         END DO
         ! !$omp end target teams distribute
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-        CALL profile_range_pop()
-#endif
-        END ASSOCIATE
-    END SUBROUTINE sipiter1_hyperplane_level
+    END SUBROUTINE sipiter1_hyperplane_level_impl
 
 
     SUBROUTINE sipiter2_classic_level(ilevel, dp, res, sipue, sipun, siput)
