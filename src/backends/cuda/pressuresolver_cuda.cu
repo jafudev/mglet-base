@@ -1,5 +1,3 @@
-#include "fieldhelper_backend.h"
-
 #include <cstddef>
 
 #include <cuda_runtime.h>
@@ -70,17 +68,6 @@ __global__ void maxabscal_kernel(
     {
         maxabsgrid[block_idx] = sdata[0];
     }
-}
-
-__global__ void accumulate_pcorr_kernel(mgletreal* __restrict__ dp_arr, mgletreal* __restrict__ hilf_arr, std::size_t n)
-{
-    const auto i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i >= n)
-    {
-        return;
-    }
-
-    dp_arr[i] = dp_arr[i] + hilf_arr[i];
 }
 
 __global__ void rescal_kernel(
@@ -276,14 +263,15 @@ __global__ void sipiter2_hyperplane_level_kernel(
 
 void maxabscal_backend(
     FArrView<mgletreal> maxabsgrid,
-    const FArrView<mgletreal> phi,
-    const FArrView<mgletint> mygrids,
-    mgletint nmygrids,
-    const FArrView<mgletint> kkk,
-    const FArrView<mgletint> jjj,
-    const FArrView<mgletint> iii,
-    const FArrView<mgletint> ip3d)
+    FArrView<const mgletreal> phi,
+    FArrView<const mgletint> mygrids,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d)
 {
+    const auto nmygrids = mygrids.flat_size();
+
     if (nmygrids == 0)
     {
         return;
@@ -307,42 +295,19 @@ void maxabscal_backend(
     CUDA_CHECK(cudaDeviceSynchronize());
 }
 
-void accumulate_pcorr_backend(FArrView<mgletreal> dp_view, const FArrView<mgletreal> hilf_view)
-{
-    const auto n_dp = dp_view.flat_size();
-    const auto n_hilf = hilf_view.flat_size();
-
-    if (n_dp != n_hilf)
-    {
-        MGLET_ERRR();
-    }
-
-    if (n_dp == 0)
-    {
-        return;
-    }
-
-    const unsigned threads = 256;
-    const unsigned blocks = (n_dp + threads - 1) / threads;
-
-    accumulate_pcorr_kernel<<<blocks, threads>>>(dp_view.device_ptr(), hilf_view.device_ptr(), n_dp);
-
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
-}
-
 void rescal_backend(
-    FArrView<mgletreal> rhs_view,
-    const FArrView<mgletreal> res_view,
-    mgletint nmygrids,
-    const FArrView<mgletint> mygrids_view,
-    const FArrView<mgletint> kkk_view,
-    const FArrView<mgletint> jjj_view,
-    const FArrView<mgletint> iii_view,
-    const FArrView<mgletint> ip3d_view)
+    FArrView<mgletreal> rhs,
+    FArrView<const mgletreal> res,
+    FArrView<const mgletint> mygrids,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d)
 {
-    const auto n_rhs = rhs_view.flat_size();
-    const auto n_res = res_view.flat_size();
+    const auto nmygrids = mygrids.flat_size();
+
+    const auto n_rhs = rhs.flat_size();
+    const auto n_res = res.flat_size();
 
     if (n_rhs != n_res)
     {
@@ -358,14 +323,14 @@ void rescal_backend(
     const auto blocks = ::dim3{static_cast<unsigned>(nmygrids)};
 
     rescal_kernel<<<blocks, threads>>>(
-        rhs_view.device_ptr(),
-        res_view.device_ptr(),
+        rhs.device_ptr(),
+        res.device_ptr(),
         nmygrids,
-        mygrids_view.device_ptr(),
-        kkk_view.device_ptr(),
-        jjj_view.device_ptr(),
-        iii_view.device_ptr(),
-        ip3d_view.device_ptr());
+        mygrids.device_ptr(),
+        kkk.device_ptr(),
+        jjj.device_ptr(),
+        iii.device_ptr(),
+        ip3d.device_ptr());
 
     CUDA_CHECK(cudaGetLastError());
     CUDA_CHECK(cudaDeviceSynchronize());
@@ -373,20 +338,21 @@ void rescal_backend(
 
 void sipiter1_hyperplane_level_backend(
     FArrView<mgletreal>(res),
-    const FArrView<mgletreal> rhs,
-    const FArrView<mgletreal> siplw,
-    const FArrView<mgletreal> sipls,
-    const FArrView<mgletreal> siplb,
-    const FArrView<mgletreal> siplpr,
-    const FArrView<mgletifk> miphp,
-    const FArrView<mgletifk> idxhp,
-    mgletint nmygridsonlvl,
-    const FArrView<mgletint> mygridsonlvl,
-    const FArrView<mgletint> kkk,
-    const FArrView<mgletint> jjj,
-    const FArrView<mgletint> iii,
-    const FArrView<mgletint> ip3d)
+    FArrView<const mgletreal> rhs,
+    FArrView<const mgletreal> siplw,
+    FArrView<const mgletreal> sipls,
+    FArrView<const mgletreal> siplb,
+    FArrView<const mgletreal> siplpr,
+    FArrView<const mgletifk> miphp,
+    FArrView<const mgletifk> idxhp,
+    FArrView<const mgletint> mygridsonlvl,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d)
 {
+    const auto nmygridsonlvl = mygridsonlvl.flat_size();
+
     const auto threads = ::dim3{256};
     const auto blocks = ::dim3{static_cast<unsigned>(nmygridsonlvl)};
 
@@ -413,18 +379,19 @@ void sipiter1_hyperplane_level_backend(
 void sipiter2_hyperplane_level_backend(
     FArrView<mgletreal> dp,
     FArrView<mgletreal> res,
-    const FArrView<mgletreal> sipue,
-    const FArrView<mgletreal> sipun,
-    const FArrView<mgletreal> siput,
-    const FArrView<mgletifk> miphp,
-    const FArrView<mgletifk> idxhp,
-    mgletint nmygridsonlvl,
-    const FArrView<mgletint> mygridsonlvl,
-    const FArrView<mgletint> kkk,
-    const FArrView<mgletint> jjj,
-    const FArrView<mgletint> iii,
-    const FArrView<mgletint> ip3d)
+    FArrView<const mgletreal> sipue,
+    FArrView<const mgletreal> sipun,
+    FArrView<const mgletreal> siput,
+    FArrView<const mgletifk> miphp,
+    FArrView<const mgletifk> idxhp,
+    FArrView<const mgletint> mygridsonlvl,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d)
 {
+    const auto nmygridsonlvl = mygridsonlvl.flat_size();
+
     const auto threads = ::dim3{256};
     const auto blocks = ::dim3{static_cast<unsigned>(nmygridsonlvl)};
 

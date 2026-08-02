@@ -15,13 +15,12 @@ MODULE pressuresolver_mod
     PRIVATE
 
     INTERFACE
-        SUBROUTINE maxabscal_backend(maxabsgrid, phi, mygrids_, nmygrids_, &
+        SUBROUTINE maxabscal_backend(maxabsgrid, phi, mygrids_, &
                 kkk_, jjj_, iii_, ip3d_) BIND(C, name="maxabscal_c")
             USE precision_mod, ONLY: realk, intk
             REAL(realk), INTENT(inout) :: maxabsgrid(:)
             REAL(realk), INTENT(in) :: phi(:)
             INTEGER(intk), INTENT(in) :: mygrids_(:)
-            INTEGER(intk), VALUE, INTENT(in) :: nmygrids_
             INTEGER(intk), INTENT(in) :: kkk_(:)
             INTEGER(intk), INTENT(in) :: jjj_(:)
             INTEGER(intk), INTENT(in) :: iii_(:)
@@ -35,12 +34,11 @@ MODULE pressuresolver_mod
             REAL(realk), INTENT(in) :: hilf(:)
         END SUBROUTINE accumulate_pcorr_backend
 
-        SUBROUTINE rescal_backend(rhs, res, nmygrids_, mygrids_, kkk_, jjj_, &
+        SUBROUTINE rescal_backend(rhs, res, mygrids_, kkk_, jjj_, &
                 iii_, idim3d_) BIND(C, name="rescal_c")
             USE precision_mod, ONLY: realk, intk
             REAL(realk), INTENT(inout) :: rhs(:)
             REAL(realk), INTENT(in) :: res(:)
-            INTEGER(intk), VALUE, INTENT(in) :: nmygrids_
             INTEGER(intk), INTENT(in) :: mygrids_(:)
             INTEGER(intk), INTENT(in) :: kkk_(:)
             INTEGER(intk), INTENT(in) :: jjj_(:)
@@ -49,7 +47,7 @@ MODULE pressuresolver_mod
         END SUBROUTINE rescal_backend
 
         SUBROUTINE sipiter1_hyperplane_level_backend(res, rhs, &
-                siplw, sipls, siplb, siplpr, miphp, idxhp, nmygridsonlvl, &
+                siplw, sipls, siplb, siplpr, miphp, idxhp, &
                 mygridsonlvl_, kkk_, jjj_, iii_, ip3d_) &
                 BIND(C, name="sipiter1_hyperplane_level_c")
             USE precision_mod, ONLY: realk, intk, ifk
@@ -61,7 +59,6 @@ MODULE pressuresolver_mod
             REAL(realk), INTENT(in) :: siplpr(:)
             INTEGER(ifk), INTENT(in) :: miphp(:)
             INTEGER(ifk), INTENT(in) :: idxhp(:)
-            INTEGER(intk), VALUE, INTENT(in) :: nmygridsonlvl
             INTEGER(intk), INTENT(in) :: mygridsonlvl_(:)
             INTEGER(intk), INTENT(in) :: kkk_(:)
             INTEGER(intk), INTENT(in) :: jjj_(:)
@@ -70,7 +67,7 @@ MODULE pressuresolver_mod
         END SUBROUTINE sipiter1_hyperplane_level_backend
 
         SUBROUTINE sipiter2_hyperplane_level_backend(dp, res, &
-                sipue, sipun, siput, miphp, idxhp, nmygridsonlvl, &
+                sipue, sipun, siput, miphp, idxhp, &
                 mygridsonlvl_, kkk_, jjj_, iii_, ip3d_) &
                 BIND(C, name="sipiter2_hyperplane_level_c")
             USE precision_mod, ONLY: realk, intk, ifk
@@ -81,7 +78,6 @@ MODULE pressuresolver_mod
             REAL(realk), INTENT(in) :: siput(:)
             INTEGER(ifk), INTENT(in) :: miphp(:)
             INTEGER(ifk), INTENT(in) :: idxhp(:)
-            INTEGER(intk), VALUE, INTENT(in) :: nmygridsonlvl
             INTEGER(intk), INTENT(in) :: mygridsonlvl_(:)
             INTEGER(intk), INTENT(in) :: kkk_(:)
             INTEGER(intk), INTENT(in) :: jjj_(:)
@@ -597,7 +593,7 @@ CONTAINS
 #ifdef _MGLET_USE_BACKEND_
         CALL sipiter1_hyperplane_level_backend(res_f%arr, rhs_f%arr, &
             siplw%arr, sipls%arr, siplb%arr, siplpr%arr, mip_hp_f%arr, &
-            idx_hp_f%arr, nmygridslvl(ilevel), mygridslvl(:, ilevel), &
+            idx_hp_f%arr, mygridslvl(:, ilevel), &
             kkk, jjj, iii, ip3d)
 #else
         CALL sipiter1_hyperplane_level_impl(ilevel, res_f%arr, rhs_f%arr, &
@@ -684,7 +680,7 @@ CONTAINS
 #ifdef _MGLET_USE_BACKEND_
         CALL sipiter2_hyperplane_level_backend(dp_f%arr, res_f%arr, &
             sipue_f%arr, sipun_f%arr, siput_f%arr, mip_hp_f%arr, &
-            idx_hp_f%arr, nmygridslvl(ilevel), mygridslvl(:, ilevel), &
+            idx_hp_f%arr, mygridslvl(:, ilevel), &
             kkk, jjj, iii, ip3d)
 #else
         CALL sipiter2_hyperplane_level_impl(ilevel, dp_f%arr, res_f%arr, &
@@ -741,7 +737,7 @@ CONTAINS
 
 #ifdef _MGLET_USE_BACKEND_
         !$omp target data map(tofrom: maxabsgrid)
-        CALL maxabscal_backend(maxabsgrid, phi_f%arr, mygrids, nmygrids, kkk, &
+        CALL maxabscal_backend(maxabsgrid, phi_f%arr, mygrids, kkk, &
             jjj, iii, ip3d)
         !$omp end target data
 
@@ -820,7 +816,7 @@ CONTAINS
 #endif
 
 #ifdef _MGLET_USE_BACKEND_
-        CALL rescal_backend(rhs_f%arr, res_f%arr, nmygrids, mygrids, kkk, &
+        CALL rescal_backend(rhs_f%arr, res_f%arr, mygrids, kkk, &
             jjj, iii, ip3d)
 #else
         CALL rescal_impl(rhs_f%arr, res_f%arr)

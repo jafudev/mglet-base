@@ -35,11 +35,11 @@ void process_selftasks_conn2_c(
         mglet::backend::FArrView<mgletreal>(a4),
         mglet::backend::FArrView<mgletreal>(a5),
         mglet::backend::FArrView<mgletreal>(a6),
-        mglet::backend::FArrView<mgletint>(selftasks),
-        mglet::backend::FArrView<mgletint>(kkk),
-        mglet::backend::FArrView<mgletint>(jjj),
-        mglet::backend::FArrView<mgletint>(iii),
-        mglet::backend::FArrView<mgletint>(ip3d));
+        mglet::backend::FArrView<const mgletint>(selftasks),
+        mglet::backend::FArrView<const mgletint>(kkk),
+        mglet::backend::FArrView<const mgletint>(jjj),
+        mglet::backend::FArrView<const mgletint>(iii),
+        mglet::backend::FArrView<const mgletint>(ip3d));
 }
 }
 

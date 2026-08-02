@@ -13,7 +13,7 @@ if(MGLET_OFFLOAD_BACKEND STREQUAL "cuda")
         PRIVATE cuda/bound_pressure_cuda.cu
         PRIVATE cuda/ctof2_cuda.cu
         PRIVATE cuda/conn2_cuda.cu
-        PRIVATE cuda/fieldhelper_cuda.cu
+        PRIVATE cuda/tooling_cuda.cu
         PRIVATE cuda/laplacephi_cuda.cu
         PRIVATE cuda/parent2_cuda.cu
         PRIVATE cuda/pressuresolver_cuda.cu

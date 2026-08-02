@@ -18,6 +18,14 @@ MODULE fieldhelper_mod
             REAL(realk), INTENT(inout) :: arr(:)
             REAL(realk), VALUE, INTENT(in) :: val
         END SUBROUTINE set_field_arr_realk_backend
+
+        SUBROUTINE set_field_arr_ifk_backend(arr, val) &
+                BIND(C, name="set_field_arr_ifk_c")
+            USE, INTRINSIC :: iso_c_binding, ONLY: c_int64_t
+            USE precision_mod, ONLY: ifk
+            INTEGER(ifk), INTENT(inout) :: arr(:)
+            INTEGER(ifk), VALUE, INTENT(in) :: val
+        END SUBROUTINE set_field_arr_ifk_backend
     END INTERFACE
 
     INTERFACE set_field_arr
@@ -45,14 +53,14 @@ CONTAINS
         END IF
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
-            CALL profile_range_push("set_field_arr_realk")
+        CALL profile_range_push("set_field_arr_realk")
 #endif
 
         IF (device2) THEN
 #ifdef _MGLET_USE_BACKEND_
         CALL set_field_arr_realk_backend(field%arr, val)
 #else
-        CALL set_field_arr_realk_omp(field%arr, val)
+        CALL set_field_arr_realk_impl(field%arr, val)
 #endif
         ELSE
             field%arr = val
@@ -64,7 +72,7 @@ CONTAINS
     END SUBROUTINE set_field_arr_realk
 
 
-    SUBROUTINE set_field_arr_realk_omp(arr, val)
+    SUBROUTINE set_field_arr_realk_impl(arr, val)
         ! Subroutine arguments
         REAL(realk), CONTIGUOUS, INTENT(inout) :: arr(:)
         REAL(realk), INTENT(in) :: val
@@ -79,7 +87,7 @@ CONTAINS
             arr(i) = val
         END DO
         !$omp end target teams loop
-    END SUBROUTINE set_field_arr_realk_omp
+    END SUBROUTINE set_field_arr_realk_impl
 
 
     SUBROUTINE set_field_arr_ifk(field, val, device)
@@ -98,26 +106,42 @@ CONTAINS
             device2 = .FALSE.
         END IF
 
-        IF (device2) THEN
-            n = SIZE(field%arr)
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_push("set_field_arr_ifk")
+#endif
 
-            ASSOCIATE(arr => field%arr)
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-            CALL profile_range_push("set_field_arr_ifk")
+        IF (device2) THEN
+#ifdef _MGLET_USE_BACKEND_
+        CALL set_field_arr_ifk_backend(field%arr, val)
+#else
+        CALL set_field_arr_ifk_impl(field%arr, val)
 #endif
-            !$omp target teams loop
-            DO i = 1, n
-                arr(i) = val
-            END DO
-            !$omp end target teams loop
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-            CALL profile_range_pop()
-#endif
-            END ASSOCIATE
         ELSE
             field%arr = val
         END IF
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+            CALL profile_range_pop()
+#endif
     END SUBROUTINE set_field_arr_ifk
+
+
+    SUBROUTINE set_field_arr_ifk_impl(arr, val)
+        ! Subroutine arguments
+        INTEGER(ifk), CONTIGUOUS, INTENT(inout) :: arr(:)
+        INTEGER(ifk), INTENT(in) :: val
+
+        ! Local variables
+        INTEGER(intk) :: i, n
+
+        n = SIZE(arr)
+
+        !$omp target teams loop
+        DO i = 1, n
+            arr(i) = val
+        END DO
+        !$omp end target teams loop
+    END SUBROUTINE set_field_arr_ifk_impl
 
 
     SUBROUTINE map_arr_to_device(f1, f2, f3, f4, f5, f6, f7, message)

@@ -15,13 +15,13 @@ namespace mglet::backend
 namespace
 {
 
-static constexpr int kSelftaskSize = 8;
+static constexpr mgletint selftask_size = 8;
 
 __global__ void process_selftasks_ctof2_kernel(
     const mgletreal* __restrict__ fc,
     mgletreal* __restrict__ ff,
     const mgletint* __restrict__ selftasks,
-    int nselftasks,
+    mgletint nselftasks,
     const mgletint* __restrict__ kkk,
     const mgletint* __restrict__ jjj,
     const mgletint* __restrict__ iii,
@@ -33,7 +33,7 @@ __global__ void process_selftasks_ctof2_kernel(
         return;
     }
 
-    const mgletint* task = selftasks + (std::int64_t)itask * kSelftaskSize;
+    const mgletint* task = selftasks + itask * selftask_size;
 
     const auto igridf = task[0] - 1; // 1-based Fortran grid id -> 0-based
     const auto igridc = task[1] - 1;
@@ -80,28 +80,34 @@ __global__ void process_selftasks_ctof2_kernel(
 } // namespace
 
 void process_selftasks_ctof2_backend(
-    const FArrView<mgletreal> fc,
+    FArrView<const mgletreal> fc,
     FArrView<mgletreal> ff,
-    mgletint nselftasks,
-    const FArrView<mgletint> selftasks,
-    const FArrView<mgletint> kkk,
-    const FArrView<mgletint> jjj,
-    const FArrView<mgletint> iii,
-    const FArrView<mgletint> ip3d)
+    FArrView<const mgletint> selftasks,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d)
 {
-    if (nselftasks == 0)
+    const auto ntasks = static_cast<int>((selftasks.flat_size() / selftask_size)) - 1;
+
+    if (ntasks < 0)
+    {
+        MGLET_ERRR();
+    }
+
+    if (ntasks == 0)
     {
         return;
     }
 
     const auto threads = ::dim3{256};
-    const auto blocks = ::dim3{static_cast<unsigned>(nselftasks)};
+    const auto blocks = ::dim3{static_cast<unsigned>(ntasks)};
 
     process_selftasks_ctof2_kernel<<<blocks, threads>>>(
         fc.device_ptr(),
         ff.device_ptr(),
         selftasks.device_ptr(),
-        nselftasks,
+        ntasks,
         kkk.device_ptr(),
         jjj.device_ptr(),
         iii.device_ptr(),

@@ -8,16 +8,18 @@ extern "C"
 
 #include <omp.h>
 
-#include "errr.h"
 #include "f_arr_view.h"
-#include "fieldhelper_backend.h"
 #include "mglet_precision.h"
+#include "tooling_interface.h"
 
-extern "C" void set_field_arr_realk_c(CFI_cdesc_t* field_arr, mgletreal val)
+extern "C" void set_field_arr_realk_c(CFI_cdesc_t* farr, mgletreal val)
 {
-    const auto arr = mglet::backend::FArrView<mgletreal>(field_arr);
+    mglet::backend::set_farr_realk(mglet::backend::FArrView<mgletreal>(farr), val);
+}
 
-    mglet::backend::set_field_arr_realk_backend(arr, val);
+extern "C" void set_field_arr_ifk_c(CFI_cdesc_t* farr, mgletifk val)
+{
+    mglet::backend::set_farr_ifk(mglet::backend::FArrView<mgletifk>(farr), val);
 }
 
 #endif // _MGLET_USE_BACKEND_

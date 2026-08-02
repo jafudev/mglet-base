@@ -8,7 +8,7 @@ AllowAllConstructorInitializersOnNextLine: true
 BreakConstructorInitializers: BeforeComma
 AllowShortBlocksOnASingleLine: Never
 AlignTrailingComments: true
-ColumnLimit: 100
+ColumnLimit: 120
 AllowShortFunctionsOnASingleLine: None
 BinPackArguments: false
 BinPackParameters: false

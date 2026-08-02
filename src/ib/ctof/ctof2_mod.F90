@@ -7,13 +7,12 @@ MODULE ctof2_mod
     PRIVATE
 
     INTERFACE
-        SUBROUTINE process_selftasks_ctof2_backend(fc, ff, nselftasks_, &
+        SUBROUTINE process_selftasks_ctof2_backend(fc, ff, &
                 selftasks_, kkk_, jjj_, iii_, ip3d_) &
                 BIND(C, name="process_selftasks_ctof2_c")
             USE precision_mod, ONLY: realk, intk
             REAL(realk), INTENT(in) :: fc(:)
             REAL(realk), INTENT(inout) :: ff(:)
-            INTEGER(intk), VALUE, INTENT(in) :: nselftasks_
             INTEGER(intk), INTENT(in) :: selftasks_(:, :)
             INTEGER(intk), INTENT(in) :: kkk_(:), jjj_(:), iii_(:)
             INTEGER(intk), INTENT(in) :: ip3d_(:)
@@ -468,7 +467,7 @@ SUBROUTINE process_selftasks(fc, ff, nselftasks, etasks)
 #endif
 
 #ifdef _MGLET_USE_BACKEND_
-        CALL process_selftasks_ctof2_backend(fc%arr, ff%arr, nselftasks, &
+        CALL process_selftasks_ctof2_backend(fc%arr, ff%arr, &
             etasks, kkk, jjj, iii, ip3d)
 #else
         BLOCK

@@ -1,5 +1,3 @@
-#include "fieldhelper_backend.h"
-
 #include <cstddef>
 
 #include <cuda_runtime.h>
@@ -140,23 +138,23 @@ __global__ void laplacephi_level_kernel(
 
 void laplacephi_backend(
     FArrView<mgletreal> res,
-    FArrView<mgletreal> phi,
-    FArrView<mgletreal> gsaw,
-    FArrView<mgletreal> gsae,
-    FArrView<mgletreal> gsas,
-    FArrView<mgletreal> gsan,
-    FArrView<mgletreal> gsab,
-    FArrView<mgletreal> gsat,
-    FArrView<mgletreal> gsap,
-    FArrView<mgletreal> bp,
-    FArrView<mgletint> mygrids,
-    FArrView<mgletint> kkk,
-    FArrView<mgletint> jjj,
-    FArrView<mgletint> iii,
-    FArrView<mgletint> ip3d,
-    FArrView<mgletint> ip1dx,
-    FArrView<mgletint> ip1dy,
-    FArrView<mgletint> ip1dz)
+    FArrView<const mgletreal> phi,
+    FArrView<const mgletreal> gsaw,
+    FArrView<const mgletreal> gsae,
+    FArrView<const mgletreal> gsas,
+    FArrView<const mgletreal> gsan,
+    FArrView<const mgletreal> gsab,
+    FArrView<const mgletreal> gsat,
+    FArrView<const mgletreal> gsap,
+    FArrView<const mgletreal> bp,
+    FArrView<const mgletint> mygrids,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d,
+    FArrView<const mgletint> ip1dx,
+    FArrView<const mgletint> ip1dy,
+    FArrView<const mgletint> ip1dz)
 {
     const auto nmygrids = mygrids.flat_size();
 
@@ -195,25 +193,26 @@ void laplacephi_backend(
 
 void laplacephi_level_backend(
     FArrView<mgletreal> res,
-    FArrView<mgletreal> phi,
-    FArrView<mgletreal> gsaw,
-    FArrView<mgletreal> gsae,
-    FArrView<mgletreal> gsas,
-    FArrView<mgletreal> gsan,
-    FArrView<mgletreal> gsab,
-    FArrView<mgletreal> gsat,
-    FArrView<mgletreal> gsap,
-    FArrView<mgletreal> bp,
-    mgletint nmygridsonlvl,
-    FArrView<mgletint> mygridsonlvl,
-    FArrView<mgletint> kkk,
-    FArrView<mgletint> jjj,
-    FArrView<mgletint> iii,
-    FArrView<mgletint> ip3d,
-    FArrView<mgletint> ip1dx,
-    FArrView<mgletint> ip1dy,
-    FArrView<mgletint> ip1dz)
+    FArrView<const mgletreal> phi,
+    FArrView<const mgletreal> gsaw,
+    FArrView<const mgletreal> gsae,
+    FArrView<const mgletreal> gsas,
+    FArrView<const mgletreal> gsan,
+    FArrView<const mgletreal> gsab,
+    FArrView<const mgletreal> gsat,
+    FArrView<const mgletreal> gsap,
+    FArrView<const mgletreal> bp,
+    FArrView<const mgletint> mygridsonlvl,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d,
+    FArrView<const mgletint> ip1dx,
+    FArrView<const mgletint> ip1dy,
+    FArrView<const mgletint> ip1dz)
 {
+    const auto nmygridsonlvl = mygridsonlvl.flat_size();
+
     if (nmygridsonlvl == 0)
     {
         return;

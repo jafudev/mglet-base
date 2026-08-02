@@ -21,10 +21,10 @@ void process_selftasks_backend(
     FArrView<mgletreal> b4,
     FArrView<mgletreal> b5,
     FArrView<mgletreal> b6,
-    FArrView<mgletint> selftasks,
-    FArrView<mgletint> ip3d,
-    FArrView<mgletint> kkk,
-    FArrView<mgletint> jjj,
-    FArrView<mgletint> iii);
+    FArrView<const mgletint> selftasks,
+    FArrView<const mgletint> ip3d,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii);
 
 } // namespace mglet::backend

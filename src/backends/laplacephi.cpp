@@ -37,23 +37,23 @@ void laplacephi_c(
 {
     mglet::backend::laplacephi_backend(
         mglet::backend::FArrView<mgletreal>(res),
-        mglet::backend::FArrView<mgletreal>(phi),
-        mglet::backend::FArrView<mgletreal>(gsaw),
-        mglet::backend::FArrView<mgletreal>(gsae),
-        mglet::backend::FArrView<mgletreal>(gsas),
-        mglet::backend::FArrView<mgletreal>(gsan),
-        mglet::backend::FArrView<mgletreal>(gsab),
-        mglet::backend::FArrView<mgletreal>(gsat),
-        mglet::backend::FArrView<mgletreal>(gsap),
-        mglet::backend::FArrView<mgletreal>(bp),
-        mglet::backend::FArrView<mgletint>(mygrids),
-        mglet::backend::FArrView<mgletint>(kkk),
-        mglet::backend::FArrView<mgletint>(jjj),
-        mglet::backend::FArrView<mgletint>(iii),
-        mglet::backend::FArrView<mgletint>(ip3d),
-        mglet::backend::FArrView<mgletint>(ip1dx),
-        mglet::backend::FArrView<mgletint>(ip1dy),
-        mglet::backend::FArrView<mgletint>(ip1dz));
+        mglet::backend::FArrView<const mgletreal>(phi),
+        mglet::backend::FArrView<const mgletreal>(gsaw),
+        mglet::backend::FArrView<const mgletreal>(gsae),
+        mglet::backend::FArrView<const mgletreal>(gsas),
+        mglet::backend::FArrView<const mgletreal>(gsan),
+        mglet::backend::FArrView<const mgletreal>(gsab),
+        mglet::backend::FArrView<const mgletreal>(gsat),
+        mglet::backend::FArrView<const mgletreal>(gsap),
+        mglet::backend::FArrView<const mgletreal>(bp),
+        mglet::backend::FArrView<const mgletint>(mygrids),
+        mglet::backend::FArrView<const mgletint>(kkk),
+        mglet::backend::FArrView<const mgletint>(jjj),
+        mglet::backend::FArrView<const mgletint>(iii),
+        mglet::backend::FArrView<const mgletint>(ip3d),
+        mglet::backend::FArrView<const mgletint>(ip1dx),
+        mglet::backend::FArrView<const mgletint>(ip1dy),
+        mglet::backend::FArrView<const mgletint>(ip1dz));
 }
 
 
@@ -80,26 +80,24 @@ void laplacephi_level_c(
 {
     mglet::backend::laplacephi_level_backend(
         mglet::backend::FArrView<mgletreal>(res),
-        mglet::backend::FArrView<mgletreal>(phi),
-        mglet::backend::FArrView<mgletreal>(gsaw),
-        mglet::backend::FArrView<mgletreal>(gsae),
-        mglet::backend::FArrView<mgletreal>(gsas),
-        mglet::backend::FArrView<mgletreal>(gsan),
-        mglet::backend::FArrView<mgletreal>(gsab),
-        mglet::backend::FArrView<mgletreal>(gsat),
-        mglet::backend::FArrView<mgletreal>(gsap),
-        mglet::backend::FArrView<mgletreal>(bp),
-        nmygridsonlvl,
-        mglet::backend::FArrView<mgletint>(mygridsonlvl),
-        mglet::backend::FArrView<mgletint>(kkk),
-        mglet::backend::FArrView<mgletint>(jjj),
-        mglet::backend::FArrView<mgletint>(iii),
-        mglet::backend::FArrView<mgletint>(ip3d),
-        mglet::backend::FArrView<mgletint>(ip1dx),
-        mglet::backend::FArrView<mgletint>(ip1dy),
-        mglet::backend::FArrView<mgletint>(ip1dz));
+        mglet::backend::FArrView<const mgletreal>(phi),
+        mglet::backend::FArrView<const mgletreal>(gsaw),
+        mglet::backend::FArrView<const mgletreal>(gsae),
+        mglet::backend::FArrView<const mgletreal>(gsas),
+        mglet::backend::FArrView<const mgletreal>(gsan),
+        mglet::backend::FArrView<const mgletreal>(gsab),
+        mglet::backend::FArrView<const mgletreal>(gsat),
+        mglet::backend::FArrView<const mgletreal>(gsap),
+        mglet::backend::FArrView<const mgletreal>(bp),
+        mglet::backend::FArrView<const mgletint>(mygridsonlvl),
+        mglet::backend::FArrView<const mgletint>(kkk),
+        mglet::backend::FArrView<const mgletint>(jjj),
+        mglet::backend::FArrView<const mgletint>(iii),
+        mglet::backend::FArrView<const mgletint>(ip3d),
+        mglet::backend::FArrView<const mgletint>(ip1dx),
+        mglet::backend::FArrView<const mgletint>(ip1dy),
+        mglet::backend::FArrView<const mgletint>(ip1dz));
 }
-
 
 }
 

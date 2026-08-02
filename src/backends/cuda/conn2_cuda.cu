@@ -142,11 +142,11 @@ void process_selftasks_conn2_backend(
     FArrView<mgletreal> a4,
     FArrView<mgletreal> a5,
     FArrView<mgletreal> a6,
-    FArrView<mgletint> selftasks,
-    FArrView<mgletint> kkk,
-    FArrView<mgletint> jjj,
-    FArrView<mgletint> iii,
-    FArrView<mgletint> ip3d)
+    FArrView<const mgletint> selftasks,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d)
 {
     const auto ntasks = static_cast<int>(selftasks.flat_size() / num_selftasks);
 

@@ -9,58 +9,50 @@ namespace mglet::backend
 {
 
 void maxabscal_backend(
-    const FArrView<mgletreal> maxabsgrid,
-    FArrView<mgletreal> phi,
-    const FArrView<mgletint> mygrids,
-    mgletint nmygrids,
-    const FArrView<mgletint> kkk,
-    const FArrView<mgletint> jjj,
-    const FArrView<mgletint> iii,
-    const FArrView<mgletint> ip3d);
-
-void accumulate_pcorr_backend(
-    FArrView<mgletreal> dp_view,
-    const FArrView<mgletreal> hilf_view);
+    FArrView<mgletreal> maxabsgrid,
+    FArrView<const mgletreal> phi,
+    FArrView<const mgletint> mygrids,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d);
 
 void rescal_backend(
     FArrView<mgletreal> rhs_view,
-    const FArrView<mgletreal> res_view,
-    mgletint nmygrids,
-    const FArrView<mgletint> mygrids,
-    const FArrView<mgletint> kkk,
-    const FArrView<mgletint> jjj,
-    const FArrView<mgletint> iii,
-    const FArrView<mgletint> ip3d);
+    FArrView<const mgletreal> res_view,
+    FArrView<const mgletint> mygrids,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d);
 
 void sipiter1_hyperplane_level_backend(
     FArrView<mgletreal> res,
-    const FArrView<mgletreal> rhs,
-    const FArrView<mgletreal> siplw,
-    const FArrView<mgletreal> sipls,
-    const FArrView<mgletreal> siplb,
-    const FArrView<mgletreal> siplpr,
-    const FArrView<mgletifk> miphp,
-    const FArrView<mgletifk> idxhp,
-    mgletint nmygridsonlvl,
-    const FArrView<mgletint> mygridsonlvl,
-    const FArrView<mgletint> kkk,
-    const FArrView<mgletint> jjj,
-    const FArrView<mgletint> iii,
-    const FArrView<mgletint> ip3d);
+    FArrView<const mgletreal> rhs,
+    FArrView<const mgletreal> siplw,
+    FArrView<const mgletreal> sipls,
+    FArrView<const mgletreal> siplb,
+    FArrView<const mgletreal> siplpr,
+    FArrView<const mgletifk> miphp,
+    FArrView<const mgletifk> idxhp,
+    FArrView<const mgletint> mygridsonlvl,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d);
 
 void sipiter2_hyperplane_level_backend(
     FArrView<mgletreal> dp,
     FArrView<mgletreal> res,
-    const FArrView<mgletreal> sipue,
-    const FArrView<mgletreal> sipun,
-    const FArrView<mgletreal> siput,
-    const FArrView<mgletifk> miphp,
-    const FArrView<mgletifk> idxhp,
-    mgletint nmygridsonlvl,
-    const FArrView<mgletint> mygridsonlvl,
-    const FArrView<mgletint> kkk,
-    const FArrView<mgletint> jjj,
-    const FArrView<mgletint> iii,
-    const FArrView<mgletint> ip3d);
+    FArrView<const mgletreal> sipue,
+    FArrView<const mgletreal> sipun,
+    FArrView<const mgletreal> siput,
+    FArrView<const mgletifk> miphp,
+    FArrView<const mgletifk> idxhp,
+    FArrView<const mgletint> mygridsonlvl,
+    FArrView<const mgletint> kkk,
+    FArrView<const mgletint> jjj,
+    FArrView<const mgletint> iii,
+    FArrView<const mgletint> ip3d);
 
 } // namespace mglet::backend
