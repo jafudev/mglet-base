@@ -144,6 +144,10 @@ void process_selftasks_conn2(
     MappedArrView<const mgletint> iii,
     MappedArrView<const mgletint> ip3d)
 {
+    // Unlike ctof2/parent2, conn2_mod.F90's process_selftasks takes an
+    // explicit-shape dummy array stasks(selftasksize, nstasks), so the
+    // trailing dummy task row is already stripped off on the Fortran side
+    // before this array reaches the backend. Do not subtract 1 here.
     const auto ntasks = static_cast<int>(selftasks.flat_size() / num_selftasks);
 
     if (ntasks < 0)
