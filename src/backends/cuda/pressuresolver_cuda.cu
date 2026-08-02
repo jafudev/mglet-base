@@ -119,7 +119,7 @@ __global__ void rescal_kernel(
     }
 }
 
-__global__ void sipiter1_kernel(
+__global__ void sipiter1_hyperplane_level_kernel(
     mgletreal* __restrict__ res,
     const mgletreal* __restrict__ rhs,
     const mgletreal* __restrict__ lw,
@@ -189,6 +189,86 @@ __global__ void sipiter1_kernel(
         }
 
         __syncthreads();
+    }
+}
+
+__global__ void sipiter2_hyperplane_level_kernel(
+    mgletreal* __restrict__ dp,
+    mgletreal* __restrict__ res,
+    const mgletreal* __restrict__ ue,
+    const mgletreal* __restrict__ un,
+    const mgletreal* __restrict__ ut,
+    const mgletifk* __restrict__ mip,
+    const mgletifk* __restrict__ idxsip,
+    const mgletint* __restrict__ mygridsonlvl,
+    mgletint nmygridsonlvl,
+    const mgletint* __restrict__ kkk,
+    const mgletint* __restrict__ jjj,
+    const mgletint* __restrict__ iii,
+    const mgletint* __restrict__ ip3d)
+{
+    const auto block_idx = blockIdx.x;
+    if (block_idx >= nmygridsonlvl) return;
+
+    const auto igrid = mygridsonlvl[block_idx] - 1;
+
+    const auto kk = kkk[igrid];
+    const auto jj = jjj[igrid];
+    const auto ii = iii[igrid];
+    const auto ip3 = ip3d[igrid] - 1;
+
+    const mgletint n3dmin = 3 + 3 + 3;
+    const mgletint n3dmax = (ii - 2) + (jj - 2) + (kk - 2);
+
+    __shared__ mgletifk s_lm, s_lp;
+
+    for (mgletint m = n3dmax; m >= n3dmin; --m) {
+
+        if (threadIdx.x == 0) {
+            const mgletint lm  = static_cast<mgletint>(mip[ip3 + m - 1]);
+            const mgletint lm1 = static_cast<mgletint>(mip[ip3 + m]);
+            s_lm = lm;
+            s_lp = lm1 - lm;
+        }
+        __syncthreads();
+
+        const mgletint lm = s_lm;
+        const mgletint lp = s_lp;
+
+        for (mgletint ipp = 1 + threadIdx.x; ipp <= lp; ipp += blockDim.x) {
+            const mgletint iacc = lm + ipp;
+            const mgletint sip_idx = ip3 + iacc - 1;
+
+            const mgletint local_idx = static_cast<mgletint>(idxsip[sip_idx]);
+            const mgletint idx    = ip3 + local_idx - 1;
+            const mgletint idx_kp = idx + 1;
+            const mgletint idx_jp = idx + kk;
+            const mgletint idx_ip = idx + kk * jj;
+
+            mgletreal val = res[idx];
+            val -= ut[sip_idx] * res[idx_kp];
+            val -= un[sip_idx] * res[idx_jp];
+            val -= ue[sip_idx] * res[idx_ip];
+
+            res[idx] = val;
+        }
+
+        __syncthreads();
+    }
+
+    const auto ni = ii - 4;
+    const auto nj = jj - 4;
+    const auto nk = kk - 4;
+    if (ni > 0 && nj > 0 && nk > 0) {
+        const auto n = ni * nj * nk;
+        for (mgletint lin = threadIdx.x; lin < n; lin += blockDim.x) {
+            const int k = 2 + lin % nk;
+            const int j = 2 + (lin / nk) % nj;
+            const int i = 2 + lin / ((std::int64_t)nk * nj);
+
+            const auto idx = ip3 + k + j * kk + i * kk * jj;
+            dp[idx] = dp[idx] + res[idx];
+        }
     }
 }
 
@@ -292,7 +372,6 @@ void rescal_backend(
 }
 
 void sipiter1_hyperplane_level_backend(
-    mgletint ilevel,
     FArrView<mgletreal>(res),
     const FArrView<mgletreal> rhs,
     const FArrView<mgletreal> siplw,
@@ -311,7 +390,7 @@ void sipiter1_hyperplane_level_backend(
     const auto threads = ::dim3{256};
     const auto blocks = ::dim3{static_cast<unsigned>(nmygridsonlvl)};
 
-    sipiter1_kernel<<<blocks, threads>>>(
+    sipiter1_hyperplane_level_kernel<<<blocks, threads>>>(
         res.device_ptr(),
         rhs.device_ptr(),
         siplw.device_ptr(),
@@ -330,5 +409,43 @@ void sipiter1_hyperplane_level_backend(
     CUDA_CHECK(cudaGetLastError());
     CUDA_CHECK(cudaDeviceSynchronize());
 }
+
+void sipiter2_hyperplane_level_backend(
+    FArrView<mgletreal> dp,
+    FArrView<mgletreal> res,
+    const FArrView<mgletreal> sipue,
+    const FArrView<mgletreal> sipun,
+    const FArrView<mgletreal> siput,
+    const FArrView<mgletifk> miphp,
+    const FArrView<mgletifk> idxhp,
+    mgletint nmygridsonlvl,
+    const FArrView<mgletint> mygridsonlvl,
+    const FArrView<mgletint> kkk,
+    const FArrView<mgletint> jjj,
+    const FArrView<mgletint> iii,
+    const FArrView<mgletint> ip3d)
+{
+    const auto threads = ::dim3{256};
+    const auto blocks = ::dim3{static_cast<unsigned>(nmygridsonlvl)};
+
+    sipiter2_hyperplane_level_kernel<<<blocks, threads>>>(
+        dp.device_ptr(),
+        res.device_ptr(),
+        sipue.device_ptr(),
+        sipun.device_ptr(),
+        siput.device_ptr(),
+        miphp.device_ptr(),
+        idxhp.device_ptr(),
+        mygridsonlvl.device_ptr(),
+        nmygridsonlvl,
+        kkk.device_ptr(),
+        jjj.device_ptr(),
+        iii.device_ptr(),
+        ip3d.device_ptr());
+
+    CUDA_CHECK(cudaGetLastError());
+    CUDA_CHECK(cudaDeviceSynchronize());
+}
+
 
 } // namespace mglet::backend

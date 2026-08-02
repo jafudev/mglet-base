@@ -67,7 +67,6 @@ void rescal_c(
 }
 
 void sipiter1_hyperplane_level_c(
-    mgletint ilevel,
     CFI_cdesc_t* res,
     CFI_cdesc_t* rhs,
     CFI_cdesc_t* siplw,
@@ -84,7 +83,6 @@ void sipiter1_hyperplane_level_c(
     CFI_cdesc_t* ip3d)
 {
     mglet::backend::sipiter1_hyperplane_level_backend(
-        ilevel,
         mglet::backend::FArrView<mgletreal>(res),
         mglet::backend::FArrView<mgletreal>(rhs),
         mglet::backend::FArrView<mgletreal>(siplw),
@@ -100,6 +98,38 @@ void sipiter1_hyperplane_level_c(
         mglet::backend::FArrView<mgletint>(iii),
         mglet::backend::FArrView<mgletint>(ip3d));
 }
+
+void sipiter2_hyperplane_level_c(
+    CFI_cdesc_t* dp,
+    CFI_cdesc_t* res,
+    CFI_cdesc_t* sipue,
+    CFI_cdesc_t* sipun,
+    CFI_cdesc_t* siput,
+    CFI_cdesc_t* miphp,
+    CFI_cdesc_t* idxhp,
+    mgletint nmygridsonlvl,
+    CFI_cdesc_t* mygridsonlvl,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* ip3d)
+{
+    mglet::backend::sipiter2_hyperplane_level_backend(
+        mglet::backend::FArrView<mgletreal>(dp),
+        mglet::backend::FArrView<mgletreal>(res),
+        mglet::backend::FArrView<mgletreal>(sipue),
+        mglet::backend::FArrView<mgletreal>(sipun),
+        mglet::backend::FArrView<mgletreal>(siput),
+        mglet::backend::FArrView<mgletifk>(miphp),
+        mglet::backend::FArrView<mgletifk>(idxhp),
+        nmygridsonlvl,
+        mglet::backend::FArrView<mgletint>(mygridsonlvl),
+        mglet::backend::FArrView<mgletint>(kkk),
+        mglet::backend::FArrView<mgletint>(jjj),
+        mglet::backend::FArrView<mgletint>(iii),
+        mglet::backend::FArrView<mgletint>(ip3d));
+}
+
 }
 
 #endif // _MGLET_USE_BACKEND_
