@@ -290,9 +290,6 @@ CONTAINS
             CALL print_plog(ittot, irk, 0)
         END IF
 
-        ! TODO(offload): Remove once surrounding subroutines are offloaded
-        ! CALL map_arr_to_device(rhs, message="to:rhs%arr")
-
         ipc = 0
         outer: DO ipcount = 1, nouter
             ! Inner pressure iterations
@@ -306,7 +303,7 @@ CONTAINS
             CALL stop_timer(322)
 
             ! TODO(offload): Remove once surrounding subroutines offloaded
-            ! CALL map_arr_from_device(hilf, message="from:hilf%arr")
+            CALL map_arr_from_device(hilf, message="from:hilf%arr")
 
             ! --- intermediate state ---
             ! every grid level has an inner solution
@@ -324,7 +321,7 @@ CONTAINS
             END DO
 
             ! TODO(offload): Remove once surrounding subroutines are offloaded
-            ! CALL map_arr_to_device(hilf, message="to:hilf%arr")
+            CALL map_arr_to_device(hilf, message="to:hilf%arr")
 
             ! --- intermediate state ---
             ! every grid level has the best solution
@@ -334,20 +331,14 @@ CONTAINS
             ! Connect needed due to prior ftoc, since this does not do
             ! anything on the finest level, no need to connect finest level
             ! either.
-            CALL connect(layers=1, s1=hilf)
-
-            CALL map_arr_to_device(res, hilf, rhs, message="to:res|hilf|rhs")
-
+            CALL conn(layers=1, s1=hilf)
             ! res <- laplace(hilf)
             CALL laplacephi(res, hilf)
-
-
             ! rhs <- rhs + res
             CALL rescal(rhs, res)
 
-            CALL map_arr_from_device(rhs, res, message="from:res|rhs%arr")
             ! TODO(offload): Remove once surrounding subroutines are offloaded
-            ! CALL map_arr_from_device(rhs, message="from:rhs%arr")
+            CALL map_arr_from_device(rhs, message="from:rhs%arr")
 
             DO ilevel = maxlevel, minlevel+1, -1
                 CALL ftoc(ilevel, rhs, rhs, 'R')
@@ -360,11 +351,9 @@ CONTAINS
             CALL maxabscal(maxrhs, maxrhslvl, rhs)
 
             ! dp = dp + hilf
-            CALL map_arr_to_device(dp, message="to:dp%arr")
             CALL accumulate_pcorr(dp, hilf)
             CALL set_field_arr(hilf, 0.0_realk, device=.TRUE.)
             ipc = ipc + ninner
-            CALL map_arr_from_device(dp, hilf, message="from:dp%arr|hilf%arr")
 
             ! Pressure solver debug logging
             IF (loglevel >= 2) THEN
@@ -409,16 +398,11 @@ CONTAINS
         ! a value of dp was found that leads to a acceptably small residual
         DO ilevel = minlevel, maxlevel
             CALL parent(ilevel, s1=dp, device=.TRUE.)
-
-            CALL map_arr_to_device(dp)
-            CALL map_buffers_to_device(dp)
             CALL bound_pressure(ilevel, dp, bp)
-            CALL map_arr_from_device(dp)
-            CALL map_buffers_from_device(dp)
         END DO
 
         ! TODO(offload): Remove once surrounding subroutines are offloaded
-        ! CALL map_arr_from_device(dp, message="from:dp%arr")
+        CALL map_arr_from_device(dp, message="from:dp%arr")
 
         ! Pressure correction: P = P + dtrk/rho*DP
         ! Velocity fields are modified and become solenoidal based on DP
@@ -489,9 +473,6 @@ CONTAINS
         CALL get_field(siput, "SIPUT")
         CALL get_field(siplpr, "SIPLPR")
 
-        CALL map_buffers_to_device(res, dp, rhs)
-        CALL map_arr_to_device(res, dp, rhs)
-
         DO iloop = 1, ninner
             CALL bound_pressure(ilevel, dp, bp)
 
@@ -510,9 +491,6 @@ CONTAINS
         END DO
         
         CALL bound_pressure(ilevel, dp, bp)
-
-        CALL map_arr_from_device(res, dp, rhs)
-        CALL map_buffers_from_device(dp)
 
         CALL stop_timer(321)
     END SUBROUTINE mgpoisit

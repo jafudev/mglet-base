@@ -42,7 +42,7 @@ CONTAINS
         END IF
 
         IF (device2) THEN
-            CALL ctof1(ilevel, ff_f, fc_f)
+            CALL ctof2(ilevel, ff_f, fc_f)
         ELSE
             CALL ctof1(ilevel, ff_f, fc_f)
         END IF
