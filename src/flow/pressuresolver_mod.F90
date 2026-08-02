@@ -527,7 +527,9 @@ CONTAINS
         ! Local variables
         ! none...
 
+        CALL map_arr_to_device(res, dp)
         CALL laplacephi_level(ilevel, res, dp)
+        CALL map_arr_from_device(res, dp)
 
         IF (ityp == 2) THEN
             CALL sipiter1_classic_level(ilevel, res, rhs, siplw, sipls, siplb, &
@@ -637,7 +639,7 @@ CONTAINS
         INTEGER(intk) :: i, igrid
         INTEGER(intk) :: kk, jj, ii, ip3
 
-        ! !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
+        !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
         DO i = 1, nmygridslvl(ilevel)
             igrid = mygridslvl(i, ilevel)
             CALL get_mgdims(kk, jj, ii, igrid)
@@ -646,7 +648,7 @@ CONTAINS
             CALL sipiter1_hp(kk, jj, ii, rhs(ip3), res(ip3), siplw(ip3), &
                 sipls(ip3), siplb(ip3), siplpr(ip3), mip(ip3), idx(ip3))
         END DO
-        ! !$omp end target teams distribute
+        !$omp end target teams distribute
     END SUBROUTINE sipiter1_hyperplane_level_impl
 
 
@@ -723,7 +725,7 @@ CONTAINS
         ! Local variables
         INTEGER(intk) :: i, igrid, kk, jj, ii, ip3
 
-        ! !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
+        !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3)
         DO i = 1, nmygridslvl(ilevel)
             igrid = mygridslvl(i, ilevel)
             CALL get_mgdims(kk, jj, ii, igrid)
@@ -732,7 +734,7 @@ CONTAINS
             CALL sipiter2_hp(kk, jj, ii, dp(ip3), res(ip3), sipue(ip3), &
                 sipun(ip3), siput(ip3), mip(ip3), idx(ip3))
         END DO
-        ! !$omp end target teams distribute
+        !$omp end target teams distribute
     END SUBROUTINE sipiter2_hyperplane_level_impl
 
 
