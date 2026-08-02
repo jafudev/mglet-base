@@ -684,7 +684,7 @@ CONTAINS
             kkk, jjj, iii, ip3d)
 #else
         CALL sipiter2_hyperplane_level_impl(ilevel, dp_f%arr, res_f%arr, &
-            sipue_f%arr, sipun_f%arr, siput_f%arr, idx_hp_f%arr, idx_hp_f%arr)
+            sipue_f%arr, sipun_f%arr, siput_f%arr, mip_hp_f%arr, idx_hp_f%arr)
 #endif
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
