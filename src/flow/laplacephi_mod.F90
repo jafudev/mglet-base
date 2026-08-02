@@ -58,9 +58,9 @@ CONTAINS
 #endif
 
 #ifdef _MGLET_USE_BACKEND_
-!        CALL laplacephi_backend(res_f%arr, phi_f%arr, gsaw%arr, gsae%arr, &
-!            gsas%arr, gsan%arr, gsab%arr, gsat%arr, gsap%arr, bp_f%arr, &
-!            mygrids, kkk, jjj, iii, ip3d, ip1dx, ip1dy, ip1dz)
+        !CALL laplacephi_backend(res_f%arr, phi_f%arr, gsaw%arr, gsae%arr, &
+        !    gsas%arr, gsan%arr, gsab%arr, gsat%arr, gsap%arr, bp_f%arr, &
+        !    mygrids, kkk, jjj, iii, ip3d, ip1dx, ip1dy, ip1dz)
         CALL laplacephi_impl(res_f%arr, phi_f%arr, gsaw%arr, gsae%arr, &
             gsas%arr, gsan%arr, gsab%arr, gsat%arr, gsap%arr, bp_f%arr)
 
@@ -84,8 +84,8 @@ CONTAINS
         ! Local variables
         INTEGER(intk) :: i, igrid, kk, jj, ii, ip3, ipx, ipy, ipz
 
-        !$omp target teams distribute private(i, igrid, kk, jj, ii, ip3, ipx, &
-        !$omp& ipy, ipz)
+        !!$omp target teams distribute private(i, igrid, kk, jj, ii, ip3, ipx, &
+        !!$omp& ipy, ipz)
         DO i = 1, nmygrids
             igrid = mygrids(i)
             CALL get_mgdims(kk, jj, ii, igrid)
@@ -99,7 +99,7 @@ CONTAINS
                 aw(ipx), ae(ipx), an(ipy), as(ipy), at(ipz), ab(ipz), &
                 ap(ip3), bp(ip3))
         END DO
-        !$omp end target teams distribute
+        !!$omp end target teams distribute
     END SUBROUTINE laplacephi_impl
 
 
@@ -178,7 +178,7 @@ CONTAINS
         ! Local variables
         INTEGER :: k, j, i
 
-        !$omp parallel do collapse(3) private(i, j, k)
+        !!$omp parallel do collapse(3) private(i, j, k)
         DO i = 3, ii-2
             DO j = 3, jj-2
                 DO k = 3, kk-2
@@ -193,6 +193,6 @@ CONTAINS
                 END DO
             END DO
         END DO
-        !$omp end parallel do
+        !!$omp end parallel do
     END SUBROUTINE laplacephi_grid
 END MODULE laplacephi_mod
