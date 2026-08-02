@@ -160,6 +160,11 @@ void laplacephi_backend(
 {
     const auto nmygrids = mygrids.flat_size();
 
+    if (nmygrids == 0)
+    {
+        return;
+    }
+
     const auto threads = ::dim3{32, 8};
     const auto blocks = ::dim3{static_cast<unsigned>(nmygrids)};
 
@@ -209,6 +214,11 @@ void laplacephi_level_backend(
     FArrView<mgletint> ip1dy,
     FArrView<mgletint> ip1dz)
 {
+    if (nmygridsonlvl == 0)
+    {
+        return;
+    }
+
     const auto threads = ::dim3{32, 8};
     const auto blocks = ::dim3{static_cast<unsigned>(nmygridsonlvl)};
 

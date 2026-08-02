@@ -186,6 +186,7 @@ void process_selftasks_backend(
         b4.device_ptr(), b5.device_ptr(), b6.device_ptr());
 
     CUDA_CHECK(cudaGetLastError());
+    CUDA_CHECK(cudaDeviceSynchronize());
 }
 
 } // namespace mglet::backend

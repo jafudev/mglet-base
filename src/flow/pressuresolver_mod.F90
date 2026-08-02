@@ -334,7 +334,7 @@ CONTAINS
             ! Connect needed due to prior ftoc, since this does not do
             ! anything on the finest level, no need to connect finest level
             ! either.
-            CALL conn(layers=1, s1=hilf)
+            CALL connect(layers=1, s1=hilf)
 
             CALL map_arr_to_device(res, hilf, rhs, message="to:res|hilf|rhs")
 
@@ -487,6 +487,8 @@ CONTAINS
         DO iloop = 1, ninner
             CALL bound_pressure(ilevel, dp, bp)
 
+            CALL map_arr_to_device(res, dp, rhs)
+
             IF (ityp == 1 .AND. ilevel > minlevel) THEN
                 ! The SOR relaxation is usually not efficient at the
                 ! coarsest level, hence only apply at the finer levels
@@ -499,6 +501,8 @@ CONTAINS
             END IF
 
             CALL conn(ilevel, 1, s1=dp)
+
+            CALL map_arr_from_device(res, dp, rhs)
         END DO
 
         CALL bound_pressure(ilevel, dp, bp)
@@ -527,18 +531,14 @@ CONTAINS
         ! Local variables
         ! none...
 
-        CALL map_arr_to_device(res, dp)
         CALL laplacephi_level(ilevel, res, dp)
-        CALL map_arr_from_device(res, dp)
 
         IF (ityp == 2) THEN
             CALL sipiter1_classic_level(ilevel, res, rhs, siplw, sipls, siplb, &
                 siplpr)
         ELSE
-            CALL map_arr_to_device(res, rhs)
             CALL sipiter1_hyperplane_level(ilevel, res, rhs, siplw, sipls, &
                 siplb, siplpr)
-            CALL map_arr_from_device(res, rhs)
         END IF
 
         IF (iloop < ninner) THEN
@@ -550,10 +550,8 @@ CONTAINS
         IF (ityp == 2) THEN
             CALL sipiter2_classic_level(ilevel, dp, res, sipue, sipun, siput)
         ELSE
-            CALL map_arr_to_device(dp, res)
             CALL sipiter2_hyperplane_level(ilevel, dp, res, sipue, sipun, &
                 siput)
-            CALL map_arr_from_device(dp, res)
         END IF
     END SUBROUTINE sip
 

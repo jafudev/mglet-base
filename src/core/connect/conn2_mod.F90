@@ -5,17 +5,36 @@ MODULE conn2_mod
     USE commbuf_mod, ONLY: sendbuf, recvbuf
     USE err_mod, ONLY: errr
     USE grids_mod, ONLY: mygrids, nmygrids, level, idprocofgrd, itypboconds, &
-        maxlevel, minlevel, get_neighbours, get_mgdims
+        maxlevel, minlevel, get_neighbours, get_mgdims, kkk, jjj, iii
     USE comms_mod, ONLY: myid, numprocs
     USE field_mod
     USE connect_core_mod
     USE fieldhelper_mod
     USE fieldpool_mod
-    USE pointers_mod, ONLY: get_ip3
+    USE pointers_mod, ONLY: get_ip3, ip3d
     USE profile_tools_mod
 
     IMPLICIT NONE (type, external)
     PRIVATE
+
+    INTERFACE
+        SUBROUTINE process_selftasks_backend(a1, a2, a3, a4, a5, a6, &
+                selftasks_, kkk_, jjj_, iii_, ip3d_) &
+                BIND(C, name="process_selftasks_conn2_c")
+            USE precision_mod, ONLY: realk, intk
+            REAL(realk), INTENT(in) :: a1(:)
+            REAL(realk), INTENT(in) :: a2(:)
+            REAL(realk), INTENT(in) :: a3(:)
+            REAL(realk), INTENT(in) :: a4(:)
+            REAL(realk), INTENT(in) :: a5(:)
+            REAL(realk), INTENT(in) :: a6(:)
+            INTEGER(intk), INTENT(in) :: selftasks_(:, :)
+            INTEGER(intk), INTENT(in) :: kkk_(:)
+            INTEGER(intk), INTENT(in) :: jjj_(:)
+            INTEGER(intk), INTENT(in) :: iii_(:)
+            INTEGER(intk), INTENT(in) :: ip3d_(:)
+        END SUBROUTINE process_selftasks_backend
+    END INTERFACE
 
     ! Lists that hold the send and receive request arrays
     TYPE(MPI_Request), ALLOCATABLE :: sendreqs(:), recvreqs(:)
@@ -35,7 +54,7 @@ MODULE conn2_mod
     INTEGER(intk), ALLOCATABLE :: sendtasks(:, :), recvtasks(:, :)
     INTEGER(intk), ALLOCATABLE :: selftasks(:, :)
     INTEGER(intk), ALLOCATABLE :: mpisendtasks(:, :), mpirecvtasks(:, :)
-    ! !$omp declare target(sendtasks, recvtasks, selftasks)
+    !$omp declare target(sendtasks, recvtasks, selftasks)
 
     ! Type to hold condensed task arrays to execute a certain type of conn
     TYPE :: work_t
@@ -256,14 +275,14 @@ CONTAINS
             minconlvl, maxconlvl, nplane, vertices, &
             normal2, fwd, flag, nvars, v1, v2, v3, s1, s2, s3)
 
-        ! !$omp target update to( &
-        ! !$omp&  sendtasks(1:buffertasksize, 1:nsendtasks+1), &
-        ! !$omp&  selftasks(1:selftasksize, 1:nselftasks+1)) nowait
+        !$omp target update to( &
+        !$omp&  sendtasks(1:buffertasksize, 1:nsendtasks+1), &
+        !$omp&  selftasks(1:selftasksize, 1:nselftasks+1)) nowait
 
         CALL recv_mpi_all(minconlvl, maxconlvl, nplane, vertices, &
             normal2, fwd, flag, nvars)
 
-        ! !$omp taskwait
+        !$omp taskwait
 
         CALL process_sendtasks(nsendtasks, sendtasks)
         CALL process_mpisend(nmpisendtasks, mpisendtasks)
@@ -272,7 +291,7 @@ CONTAINS
         CALL prepare_recvtasks_all(recvtasks, nrecvtasks, &
             nplane, normal2, flag, v1, v2, v3, s1, s2, s3)
 
-        ! !$omp target update to(recvtasks(1:buffertasksize, 1:nrecvtasks+1))
+        !$omp target update to(recvtasks(1:buffertasksize, 1:nrecvtasks+1))
 
         CALL process_recvtasks(nrecvtasks, recvtasks)
     END SUBROUTINE jit_conn
@@ -337,9 +356,9 @@ CONTAINS
             minconlvl, maxconlvl, nplane, vertices, &
             normal2, fwd, flag, nvars, v1, v2, v3, s1, s2, s3)
 
-        ! !$omp target update to( &
-        ! !$omp&  sendtasks(1:buffertasksize, 1:nsendtasks+1), &
-        ! !$omp&  selftasks(1:selftasksize, 1:nselftasks+1))
+        !$omp target update to( &
+        !$omp&  sendtasks(1:buffertasksize, 1:nsendtasks+1), &
+        !$omp&  selftasks(1:selftasksize, 1:nselftasks+1))
 
         CALL process_mpirecv(nmpirecvtasks, mpirecvtasks)
         CALL process_sendtasks(nsendtasks, sendtasks)
@@ -348,7 +367,7 @@ CONTAINS
         CALL prepare_recvtasks_all(recvtasks, nrecvtasks, &
             nplane, normal2, flag, v1, v2, v3, s1, s2, s3)
 
-        ! !$omp target update to(recvtasks(1:buffertasksize, 1:nrecvtasks+1))
+        !$omp target update to(recvtasks(1:buffertasksize, 1:nrecvtasks+1))
         CALL process_recvtasks(nrecvtasks, recvtasks)
 
         ! Allocate the workpackage arrays in the exact sizes
@@ -365,10 +384,10 @@ CONTAINS
         wptr%mpisendtasks = mpisendtasks(:, 1:nmpisendtasks+1)
         wptr%mpirecvtasks = mpirecvtasks(:, 1:nmpirecvtasks+1)
 
-        ! !$omp target enter data map(to: &
-        ! !$omp&  wptr%sendtasks(1:buffertasksize, 1:nsendtasks+1), &
-        ! !$omp&  wptr%recvtasks(1:buffertasksize, 1:nrecvtasks+1), &
-        ! !$omp&  wptr%selftasks(1:selftasksize, 1:nselftasks+1))
+        !$omp target enter data map(to: &
+        !$omp&  wptr%sendtasks(1:buffertasksize, 1:nsendtasks+1), &
+        !$omp&  wptr%recvtasks(1:buffertasksize, 1:nrecvtasks+1), &
+        !$omp&  wptr%selftasks(1:selftasksize, 1:nselftasks+1))
 
         ! Mark the workpackage as initialized
         wptr%is_init = .TRUE.
@@ -403,7 +422,7 @@ CONTAINS
         maxrecvtasks = 6 * irecv + 1
         ALLOCATE(sendtasks(buffertasksize, maxsendtasks))
         ALLOCATE(recvtasks(buffertasksize, maxrecvtasks))
-        ! !$omp target enter data map(always, to: sendtasks, recvtasks)
+        !$omp target enter data map(always, to: sendtasks, recvtasks)
 
         ! One grid has up to 26 neighbors that may live on the same rank.
         ! Data may be exchanged in forward and backward direction.
@@ -414,7 +433,7 @@ CONTAINS
         CALL count_selftasks(nselfsend, nselfrecv)
         maxselftasks = 6 * (nselfsend + nselfrecv) + 1
         ALLOCATE(selftasks(selftasksize, maxselftasks))
-        ! !$omp target enter data map(always, to: selftasks)
+        !$omp target enter data map(always, to: selftasks)
 
         ! MPI tasks are only used on the host and do not exceed isend/irecv+1
         maxmpisendtasks = isend + 1
@@ -482,8 +501,8 @@ CONTAINS
         CALL vdummy%init("DUMMY", jstag=1)
         CALL wdummy%init("DUMMY", kstag=1)
 
-        ! !$omp target enter data map(to: &
-        ! !$omp&  udummy%arr, vdummy%arr, wdummy%arr, pdummy%arr)
+        !$omp target enter data map(to: &
+        !$omp&  udummy%arr, vdummy%arr, wdummy%arr, pdummy%arr)
 
         ! START -- This section defines the recored variants of conn2 ---
 
@@ -498,8 +517,8 @@ CONTAINS
 
         ! END -- This section defines the recored variants of conn2 ---
 
-        ! !$omp target exit data map(delete: &
-        ! !$omp&  udummy%arr, vdummy%arr, wdummy%arr, pdummy%arr)
+        !$omp target exit data map(delete: &
+        !$omp&  udummy%arr, vdummy%arr, wdummy%arr, pdummy%arr)
 
         CALL pdummy%finish()
         CALL udummy%finish()
@@ -525,8 +544,8 @@ CONTAINS
         DEALLOCATE(sendreqs)
         DEALLOCATE(recvreqs)
 
-        ! !$omp target exit data map(always, delete: sendtasks, recvtasks, &
-        ! !$omp& selftasks)
+        !$omp target exit data map(always, delete: sendtasks, recvtasks, &
+        !$omp& selftasks)
         DEALLOCATE(sendtasks)
         DEALLOCATE(recvtasks)
         DEALLOCATE(selftasks)
@@ -554,8 +573,8 @@ CONTAINS
         DO i = 1, SIZE(workrecords)
             IF (.NOT. wrptr(i)%is_init) CYCLE
 
-            ! !$omp target exit data map(delete: wrptr(i)%sendtasks, &
-            ! !$omp& wrptr(i)%recvtasks, wrptr(i)%selftasks)
+            !$omp target exit data map(delete: wrptr(i)%sendtasks, &
+            !$omp& wrptr(i)%recvtasks, wrptr(i)%selftasks)
             DEALLOCATE(wrptr(i)%sendtasks)
             DEALLOCATE(wrptr(i)%recvtasks)
             DEALLOCATE(wrptr(i)%selftasks)
@@ -1472,19 +1491,45 @@ CONTAINS
             RETURN
         END IF
 
-        ! At all cost, avoid pointers within the kernel or, even worse,
-        ! pointer operations within the kernel!
-        ASSOCIATE(a1 => f1%arr, a2 => f2%arr, a3 => f3%arr, &
-                  a4 => f4%arr, a5 => f5%arr, a6 => f6%arr)
-
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("process_selftasks")
 #endif
 
-        ! !$omp target teams distribute private(itask, fieldid, igrid, igrid_d, &
-        ! !$omp&  istart, istop, jstart, jstop, kstart, kstop, &
-        ! !$omp&  istart_d, istop_d, jstart_d, jstop_d, kstart_d, kstop_d, &
-        ! !$omp&  ip3, ip3_d, kk, jj, ii)
+#ifdef _MGLET_USE_BACKEND_
+        CALL process_selftasks_backend(f1%arr, f2%arr, f3%arr, f4%arr, f5%arr, &
+            f6%arr, stasks, kkk, jjj, iii, ip3d)
+#else
+        CALL process_selftasks_impl(f1%arr, f2%arr, f3%arr, f4%arr, f5%arr, &
+            f6%arr, nstasks, stasks)
+#endif
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_pop()
+#endif
+    END SUBROUTINE process_selftasks
+
+
+    SUBROUTINE process_selftasks_impl(a1, a2, a3, a4, a5, a6, nstasks, stasks)
+        ! Subroutine arguments
+        REAL(realk), CONTIGUOUS, DIMENSION(:), INTENT(inout) :: a1, a2, a3, &
+            a4, a5, a6
+        INTEGER(intk), INTENT(in) :: nstasks
+        INTEGER(intk), INTENT(in) :: stasks(selftasksize, nstasks)
+
+        ! Local variables
+        INTEGER(intk) :: itask, fieldid, igrid, igrid_d, ip3, ip3_d, &
+            kk, jj, ii, istart, istop, jstart, jstop, kstart, kstop, &
+            istart_d, istop_d, jstart_d, jstop_d, kstart_d, kstop_d
+
+        ! Precheck to avoid kernel launch overhead
+        IF (nstasks == 0) THEN
+            RETURN
+        END IF
+
+        !$omp target teams distribute private(itask, fieldid, igrid, igrid_d, &
+        !$omp&  istart, istop, jstart, jstop, kstart, kstop, &
+        !$omp&  istart_d, istop_d, jstart_d, jstop_d, kstart_d, kstop_d, &
+        !$omp&  ip3, ip3_d, kk, jj, ii)
         DO itask = 1, nstasks
 
             ! Set variables from selftasks workpackage
@@ -1539,18 +1584,14 @@ CONTAINS
             END SELECT
 
         END DO
-        ! !$omp end target teams distribute
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-        CALL profile_range_pop()
-#endif
-        END ASSOCIATE
-    END SUBROUTINE process_selftasks
+        !$omp end target teams distribute
+    END SUBROUTINE process_selftasks_impl
 
 
     PURE SUBROUTINE arr_to_arr(kk, jj, ii, dst_rarr, src_rarr, &
             istart, istop, jstart, jstop, kstart, kstop, &
             istart_d, istop_d, jstart_d, jstop_d, kstart_d, kstop_d)
-        ! !$omp declare target
+        !$omp declare target
         ! Subroutine arguments
         INTEGER(intk), INTENT(in) :: kk, jj, ii
         REAL(realk), INTENT(inout) :: dst_rarr(kk, jj, ii)
@@ -1564,7 +1605,7 @@ CONTAINS
         joff = jstart - jstart_d
         ioff = istart - istart_d
 
-        ! !$omp parallel do collapse(3) private(i, j, k)
+        !$omp parallel do collapse(3) private(i, j, k)
         DO i = istart_d, istop_d
             DO j = jstart_d, jstop_d
                 DO k = kstart_d, kstop_d
@@ -1573,8 +1614,7 @@ CONTAINS
                 END DO
             END DO
         END DO
-        ! !$omp end parallel do
-
+        !$omp end parallel do
     END SUBROUTINE arr_to_arr
 
 

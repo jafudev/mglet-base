@@ -24,7 +24,7 @@ CONTAINS
 
         CALL start_timer(150)
 #ifdef _MGLET_OFFLOAD_
-        CALL conn1(ilevel, layers, v1, v2, v3, s1, s2, s3, corners, &
+        CALL conn2(ilevel, layers, v1, v2, v3, s1, s2, s3, corners, &
             normal, forward, ityp)
 #else
         CALL conn1(ilevel, layers, v1, v2, v3, s1, s2, s3, corners, &
@@ -36,7 +36,7 @@ CONTAINS
 
     SUBROUTINE init_conn()
 #ifdef _MGLET_OFFLOAD_
-        CALL init_conn1()
+        CALL init_conn2()
 #else
         CALL init_conn1()
 #endif
@@ -45,7 +45,7 @@ CONTAINS
 
     SUBROUTINE finish_conn()
 #ifdef _MGLET_OFFLOAD_
-        CALL finish_conn1()
+        CALL finish_conn2()
 #else
         CALL finish_conn1()
 #endif
