@@ -99,7 +99,15 @@ __global__ void laplacephi_level_kernel(
         return;
     }
 
-    const auto igrid = mygridsonlvl[block_idx] - 1; // C is 0-based
+    // mygridsonlvl is zero-padded past this level's true grid count, see
+    // mygridslvl in grids_mod.F90. Skip the padding.
+    const auto grid_id = mygridsonlvl[block_idx];
+    if (grid_id == 0)
+    {
+        return;
+    }
+
+    const auto igrid = grid_id - 1; // C is 0-based
 
     const auto kk = kkk[igrid];
     const auto jj = jjj[igrid];

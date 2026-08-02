@@ -128,7 +128,16 @@ __global__ void sipiter1_hyperplane_level_kernel(
         return;
     }
 
-    const auto igrid = mygridsonlvl[block_idx] - 1;
+    // mygridsonlvl is a per-level slice of a rectangular array sized to the
+    // level with the most grids (see mygridslvl in grids_mod.F90), so
+    // shorter levels are zero-padded at the end. Skip the padding.
+    const auto grid_id = mygridsonlvl[block_idx];
+    if (grid_id == 0)
+    {
+        return;
+    }
+
+    const auto igrid = grid_id - 1;
 
     const auto kk = kkk[igrid];
     const auto jj = jjj[igrid];
@@ -197,7 +206,12 @@ __global__ void sipiter2_hyperplane_level_kernel(
     const auto block_idx = blockIdx.x;
     if (block_idx >= nmygridsonlvl) return;
 
-    const auto igrid = mygridsonlvl[block_idx] - 1;
+    // mygridsonlvl is zero-padded past this level's true grid count, see
+    // mygridslvl in grids_mod.F90. Skip the padding.
+    const auto grid_id = mygridsonlvl[block_idx];
+    if (grid_id == 0) return;
+
+    const auto igrid = grid_id - 1;
 
     const auto kk = kkk[igrid];
     const auto jj = jjj[igrid];
