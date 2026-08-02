@@ -1,14 +1,9 @@
 #include <cstdint>
 
-#if defined(_MGLET_CUDA_)
-#include <cuda_runtime.h>
-#elif defined(_MGLET_HIP_)
-#include <hip/hip_runtime.h>
-#endif
-
 #include "errr.h"
-#include "mapped_arr_view.h"
 #include "gpu_check.h"
+#include "gpu_include.h"
+#include "mapped_arr_view.h"
 
 namespace mglet::gpu
 {
@@ -140,7 +135,7 @@ __global__ void laplacephi_level_kernel(
 
 } // namespace
 
-void laplacephi_backend(
+void laplacephi(
     MappedArrView<mgletreal> res,
     MappedArrView<const mgletreal> phi,
     MappedArrView<const mgletreal> gsaw,
@@ -195,7 +190,7 @@ void laplacephi_backend(
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-void laplacephi_level_backend(
+void laplacephi_level(
     MappedArrView<mgletreal> res,
     MappedArrView<const mgletreal> phi,
     MappedArrView<const mgletreal> gsaw,
@@ -277,7 +272,7 @@ void laplacephi_c(
     CFI_cdesc_t* ip1dy,
     CFI_cdesc_t* ip1dz)
 {
-    mglet::gpu::laplacephi_backend(
+    mglet::gpu::laplacephi(
         mglet::gpu::MappedArrView<mgletreal>(res),
         mglet::gpu::MappedArrView<const mgletreal>(phi),
         mglet::gpu::MappedArrView<const mgletreal>(gsaw),
@@ -320,7 +315,7 @@ void laplacephi_level_c(
     CFI_cdesc_t* ip1dy,
     CFI_cdesc_t* ip1dz)
 {
-    mglet::gpu::laplacephi_level_backend(
+    mglet::gpu::laplacephi_level(
         mglet::gpu::MappedArrView<mgletreal>(res),
         mglet::gpu::MappedArrView<const mgletreal>(phi),
         mglet::gpu::MappedArrView<const mgletreal>(gsaw),

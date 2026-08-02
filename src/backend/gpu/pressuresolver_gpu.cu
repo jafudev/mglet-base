@@ -1,15 +1,10 @@
 #include <cstdint>
 
-#if defined(_MGLET_CUDA_)
-#include <cuda_runtime.h>
-#elif defined(_MGLET_HIP_)
-#include <hip/hip_runtime.h>
-#endif
-
-#include "errr.h"
-#include "mapped_arr_view.h"
-#include "gpu_check.h"
 #include "arr_tools_interface.h"
+#include "errr.h"
+#include "gpu_check.h"
+#include "gpu_include.h"
+#include "mapped_arr_view.h"
 
 namespace mglet::gpu
 {
@@ -266,7 +261,7 @@ __global__ void sipiter2_hyperplane_level_kernel(
 
 } // namespace
 
-void maxabscal_backend(
+void maxabscal(
     MappedArrView<mgletreal> maxabsgrid,
     MappedArrView<const mgletreal> phi,
     MappedArrView<const mgletint> mygrids,
@@ -300,7 +295,7 @@ void maxabscal_backend(
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-void rescal_backend(
+void rescal(
     MappedArrView<mgletreal> rhs,
     MappedArrView<const mgletreal> res,
     MappedArrView<const mgletint> mygrids,
@@ -341,7 +336,7 @@ void rescal_backend(
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-void sipiter1_hyperplane_level_backend(
+void sipiter1_hyperplane_level(
     MappedArrView<mgletreal>(res),
     MappedArrView<const mgletreal> rhs,
     MappedArrView<const mgletreal> siplw,
@@ -381,7 +376,7 @@ void sipiter1_hyperplane_level_backend(
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-void sipiter2_hyperplane_level_backend(
+void sipiter2_hyperplane_level(
     MappedArrView<mgletreal> dp,
     MappedArrView<mgletreal> res,
     MappedArrView<const mgletreal> sipue,
@@ -436,7 +431,7 @@ void maxabscal_c(
     CFI_cdesc_t* iii,
     CFI_cdesc_t* idim3d)
 {
-    mglet::gpu::maxabscal_backend(
+    mglet::gpu::maxabscal(
         mglet::gpu::MappedArrView<mgletreal>(maxabsgrid),
         mglet::gpu::MappedArrView<const mgletreal>(phi),
         mglet::gpu::MappedArrView<const mgletint>(mygrids),
@@ -461,7 +456,7 @@ void rescal_c(
     CFI_cdesc_t* iii,
     CFI_cdesc_t* idim3d)
 {
-    mglet::gpu::rescal_backend(
+    mglet::gpu::rescal(
         mglet::gpu::MappedArrView<mgletreal>(rhs),
         mglet::gpu::MappedArrView<const mgletreal>(res),
         mglet::gpu::MappedArrView<const mgletint>(mygrids),
@@ -486,7 +481,7 @@ void sipiter1_hyperplane_level_c(
     CFI_cdesc_t* iii,
     CFI_cdesc_t* ip3d)
 {
-    mglet::gpu::sipiter1_hyperplane_level_backend(
+    mglet::gpu::sipiter1_hyperplane_level(
         mglet::gpu::MappedArrView<mgletreal>(res),
         mglet::gpu::MappedArrView<const mgletreal>(rhs),
         mglet::gpu::MappedArrView<const mgletreal>(siplw),
@@ -516,7 +511,7 @@ void sipiter2_hyperplane_level_c(
     CFI_cdesc_t* iii,
     CFI_cdesc_t* ip3d)
 {
-    mglet::gpu::sipiter2_hyperplane_level_backend(
+    mglet::gpu::sipiter2_hyperplane_level(
         mglet::gpu::MappedArrView<mgletreal>(dp),
         mglet::gpu::MappedArrView<mgletreal>(res),
         mglet::gpu::MappedArrView<const mgletreal>(sipue),

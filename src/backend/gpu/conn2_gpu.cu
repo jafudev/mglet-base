@@ -1,14 +1,9 @@
 #include <cstdint>
 
-#if defined(_MGLET_CUDA_)
-#include <cuda_runtime.h>
-#elif defined(_MGLET_HIP_)
-#include <hip/hip_runtime.h>
-#endif
-
 #include "errr.h"
-#include "mapped_arr_view.h"
 #include "gpu_check.h"
+#include "gpu_include.h"
+#include "mapped_arr_view.h"
 
 namespace mglet::gpu
 {
@@ -136,7 +131,7 @@ __global__ void process_selftasks_conn2_kernel(
 
 } // namespace
 
-void process_selftasks_conn2_backend(
+void process_selftasks_conn2(
     MappedArrView<mgletreal> a1,
     MappedArrView<mgletreal> a2,
     MappedArrView<mgletreal> a3,
@@ -198,7 +193,7 @@ extern "C" void process_selftasks_conn2_c(
     CFI_cdesc_t* iii,
     CFI_cdesc_t* ip3d)
 {
-    mglet::gpu::process_selftasks_conn2_backend(
+    mglet::gpu::process_selftasks_conn2(
         mglet::gpu::MappedArrView<mgletreal>(a1),
         mglet::gpu::MappedArrView<mgletreal>(a2),
         mglet::gpu::MappedArrView<mgletreal>(a3),

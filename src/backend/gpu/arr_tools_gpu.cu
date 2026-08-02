@@ -1,14 +1,8 @@
 #include <cstdint>
 
-#if defined(_MGLET_CUDA_)
-#include <cuda_runtime.h>
-#elif defined(_MGLET_HIP_)
-#include <hip/hip_runtime.h>
-#endif
-
 #include "errr.h"
 #include "gpu_check.h"
-#include "arr_tools_interface.h"
+#include "gpu_include.h"
 #include "mapped_arr_view.h"
 
 namespace mglet::gpu

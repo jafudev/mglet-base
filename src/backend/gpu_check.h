@@ -2,15 +2,16 @@
 
 #include <iostream>
 
+#include "errr.h"
+#include "gpu_include.h"
+
 #if defined(_MGLET_CUDA_)
-#include <cuda_runtime.h>
 using gpuError_t = cudaError_t;
 #define gpuSuccess cudaSuccess
 #define gpuGetErrorString cudaGetErrorString
 #define gpuDeviceSynchronize cudaDeviceSynchronize
 #define gpuGetLastError cudaGetLastError
 #elif defined(_MGLET_HIP_)
-#include <hip/hip_runtime.h>
 using gpuError_t = hipError_t;
 #define gpuSuccess hipSuccess
 #define gpuGetErrorString hipGetErrorString
@@ -18,8 +19,7 @@ using gpuError_t = hipError_t;
 #define gpuGetLastError hipGetLastError
 #endif
 
-#include "errr.h"
-
+#ifdef _MGLET_USE_BACKEND_
 #define GPU_CHECK(func)                                                                                                \
     do                                                                                                                 \
     {                                                                                                                  \
@@ -31,3 +31,4 @@ using gpuError_t = hipError_t;
             MGLET_ERRR();                                                                                              \
         }                                                                                                              \
     } while (0)
+#endif

@@ -1,14 +1,9 @@
 #include <cstdint>
 
-#if defined(_MGLET_CUDA_)
-#include <cuda_runtime.h>
-#elif defined(_MGLET_HIP_)
-#include <hip/hip_runtime.h>
-#endif
-
 #include "errr.h"
-#include "mapped_arr_view.h"
 #include "gpu_check.h"
+#include "gpu_include.h"
+#include "mapped_arr_view.h"
 
 namespace mglet::gpu
 {
@@ -91,7 +86,7 @@ __device__ void arr_to_buffers_task(
     }
 }
 
-__global__ void process_selftasks_kernel(
+__global__ void process_selftasks_parent2_kernel(
     const mgletint* __restrict__ stasks, int selftasksize, int ntasks,
     const mgletint* __restrict__ ip3d,
     const mgletint* __restrict__ kkgrid,
@@ -144,7 +139,7 @@ __global__ void process_selftasks_kernel(
 
 } // namespace
 
-void process_selftasks_backend(
+void process_selftasks_parent2(
     MappedArrView<mgletreal> a1,
     MappedArrView<mgletreal> a2,
     MappedArrView<mgletreal> a3,
@@ -178,7 +173,7 @@ void process_selftasks_backend(
     const auto threads = ::dim3{32, 8};
     const auto blocks = ::dim3{static_cast<unsigned>(ntasks)};
 
-    process_selftasks_kernel<<<blocks, threads>>>(
+    process_selftasks_parent2_kernel<<<blocks, threads>>>(
         selftasks.device_ptr(), num_selftasks, ntasks,
         ip3d.device_ptr(), kkk.device_ptr(), jjj.device_ptr(),
         a1.device_ptr(), a2.device_ptr(), a3.device_ptr(),
@@ -194,7 +189,7 @@ void process_selftasks_backend(
 
 #ifdef _MGLET_USE_BACKEND_
 
-extern "C" void process_selftasks_c(
+extern "C" void process_selftasks_parent2_c(
     CFI_cdesc_t* a1,
     CFI_cdesc_t* a2,
     CFI_cdesc_t* a3,
@@ -213,7 +208,7 @@ extern "C" void process_selftasks_c(
     CFI_cdesc_t* jjj,
     CFI_cdesc_t* iii)
 {
-    mglet::gpu::process_selftasks_backend(
+    mglet::gpu::process_selftasks_parent2(
         mglet::gpu::MappedArrView<mgletreal>(a1),
         mglet::gpu::MappedArrView<mgletreal>(a2),
         mglet::gpu::MappedArrView<mgletreal>(a3),

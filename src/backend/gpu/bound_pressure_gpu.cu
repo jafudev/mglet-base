@@ -1,14 +1,9 @@
 #include <cstdint>
 
-#if defined(_MGLET_CUDA_)
-#include <cuda_runtime.h>
-#elif defined(_MGLET_HIP_)
-#include <hip/hip_runtime.h>
-#endif
-
 #include "errr.h"
-#include "mapped_arr_view.h"
 #include "gpu_check.h"
+#include "gpu_include.h"
+#include "mapped_arr_view.h"
 
 namespace mglet::gpu
 {
@@ -821,7 +816,7 @@ __global__ void bound_pressure_nobp_kernel(
 
 } // namespace
 
-void bound_pressure_bp_backend(
+void bound_pressure_bp(
     MappedArrView<mgletreal> p,
     MappedArrView<const mgletreal> pbuffer,
     MappedArrView<const mgletreal> bp,
@@ -875,7 +870,7 @@ void bound_pressure_bp_backend(
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-void bound_pressure_nobp_backend(
+void bound_pressure_nobp(
     MappedArrView<mgletreal> p,
     MappedArrView<const mgletreal> pbuffer,
     MappedArrView<const mgletreal> dx,
@@ -952,7 +947,7 @@ extern "C" void bound_pressure_bp_c(
     CFI_cdesc_t* ip1dz,
     CFI_cdesc_t* ipbb)
 {
-    mglet::gpu::bound_pressure_bp_backend(
+    mglet::gpu::bound_pressure_bp(
         mglet::gpu::MappedArrView<mgletreal>(p),
         mglet::gpu::MappedArrView<const mgletreal>(pbuffer),
         mglet::gpu::MappedArrView<const mgletreal>(bp),
@@ -994,7 +989,7 @@ extern "C" void bound_pressure_nobp_c(
     CFI_cdesc_t* ip1dz,
     CFI_cdesc_t* ipbb)
 {
-    mglet::gpu::bound_pressure_nobp_backend(
+    mglet::gpu::bound_pressure_nobp(
         mglet::gpu::MappedArrView<mgletreal>(p),
         mglet::gpu::MappedArrView<const mgletreal>(pbuffer),
         mglet::gpu::MappedArrView<const mgletreal>(dx),

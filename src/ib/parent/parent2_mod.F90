@@ -9,7 +9,7 @@ MODULE parent2_mod
     INTERFACE
         SUBROUTINE process_selftasks_backend(a1, a2, a3, a4, a5, a6, b1, b2, &
                 b3, b4, b5, b6, selftasks_, ip3d_, kkk_, jjj_, iii_) &
-                BIND(C, name="process_selftasks_c")
+                BIND(C, name="process_selftasks_parent2_c")
             USE precision_mod, ONLY: realk, intk
             REAL(realk), INTENT(in) :: a1(:)
             REAL(realk), INTENT(in) :: a2(:)
