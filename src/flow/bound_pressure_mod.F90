@@ -11,7 +11,7 @@ MODULE bound_pressure_mod
                 BIND(C, name="bound_pressure_bp_c")
             USE precision_mod, ONLY: realk, intk
             REAL(realk), INTENT(inout) :: p(:)
-            REAL(realk), INTENT(inout) :: pbuffer(:)
+            REAL(realk), INTENT(in) :: pbuffer(:)
             REAL(realk), INTENT(in) :: bp(:)
             REAL(realk), INTENT(in) :: dx(:), dy(:), dz(:)
             REAL(realk), INTENT(in) :: ddx(:), ddy(:), ddz(:)
@@ -28,7 +28,7 @@ MODULE bound_pressure_mod
                 BIND(C, name="bound_pressure_nobp_c")
             USE precision_mod, ONLY: realk, intk
             REAL(realk), INTENT(inout) :: p(:)
-            REAL(realk), INTENT(inout) :: pbuffer(:)
+            REAL(realk), INTENT(in) :: pbuffer(:)
             REAL(realk), INTENT(in) :: dx(:), dy(:), dz(:)
             REAL(realk), INTENT(in) :: ddx(:), ddy(:), ddz(:)
             INTEGER(intk), VALUE, INTENT(in) :: nboundtasks_
