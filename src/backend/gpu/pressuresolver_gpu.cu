@@ -6,11 +6,11 @@
 #include <hip/hip_runtime.h>
 #endif
 
-#include "backend_tools.h"
 #include "errr.h"
 #include "f_arr_view.h"
+#include "gpu_error.h"
 
-namespace mglet::backend
+namespace mglet::gpu
 {
 
 namespace
@@ -419,4 +419,110 @@ void sipiter2_hyperplane_level_backend(
 }
 
 
-} // namespace mglet::backend
+} // namespace mglet::gpu
+
+#ifdef _MGLET_USE_BACKEND_
+
+extern "C"
+{
+
+void maxabscal_c(
+    CFI_cdesc_t* maxabsgrid,
+    CFI_cdesc_t* phi,
+    CFI_cdesc_t* mygrids,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* idim3d)
+{
+    mglet::gpu::maxabscal_backend(
+        mglet::gpu::FArrView<mgletreal>(maxabsgrid),
+        mglet::gpu::FArrView<const mgletreal>(phi),
+        mglet::gpu::FArrView<const mgletint>(mygrids),
+        mglet::gpu::FArrView<const mgletint>(kkk),
+        mglet::gpu::FArrView<const mgletint>(jjj),
+        mglet::gpu::FArrView<const mgletint>(iii),
+        mglet::gpu::FArrView<const mgletint>(idim3d));
+}
+
+void rescal_c(
+    CFI_cdesc_t* rhs,
+    CFI_cdesc_t* res,
+    CFI_cdesc_t* mygrids,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* idim3d)
+{
+    mglet::gpu::rescal_backend(
+        mglet::gpu::FArrView<mgletreal>(rhs),
+        mglet::gpu::FArrView<const mgletreal>(res),
+        mglet::gpu::FArrView<const mgletint>(mygrids),
+        mglet::gpu::FArrView<const mgletint>(kkk),
+        mglet::gpu::FArrView<const mgletint>(jjj),
+        mglet::gpu::FArrView<const mgletint>(iii),
+        mglet::gpu::FArrView<const mgletint>(idim3d));
+}
+
+void sipiter1_hyperplane_level_c(
+    CFI_cdesc_t* res,
+    CFI_cdesc_t* rhs,
+    CFI_cdesc_t* siplw,
+    CFI_cdesc_t* sipls,
+    CFI_cdesc_t* siplb,
+    CFI_cdesc_t* siplpr,
+    CFI_cdesc_t* miphp,
+    CFI_cdesc_t* idxhp,
+    CFI_cdesc_t* mygridsonlvl,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* ip3d)
+{
+    mglet::gpu::sipiter1_hyperplane_level_backend(
+        mglet::gpu::FArrView<mgletreal>(res),
+        mglet::gpu::FArrView<const mgletreal>(rhs),
+        mglet::gpu::FArrView<const mgletreal>(siplw),
+        mglet::gpu::FArrView<const mgletreal>(sipls),
+        mglet::gpu::FArrView<const mgletreal>(siplb),
+        mglet::gpu::FArrView<const mgletreal>(siplpr),
+        mglet::gpu::FArrView<const mgletifk>(miphp),
+        mglet::gpu::FArrView<const mgletifk>(idxhp),
+        mglet::gpu::FArrView<const mgletint>(mygridsonlvl),
+        mglet::gpu::FArrView<const mgletint>(kkk),
+        mglet::gpu::FArrView<const mgletint>(jjj),
+        mglet::gpu::FArrView<const mgletint>(iii),
+        mglet::gpu::FArrView<const mgletint>(ip3d));
+}
+
+void sipiter2_hyperplane_level_c(
+    CFI_cdesc_t* dp,
+    CFI_cdesc_t* res,
+    CFI_cdesc_t* sipue,
+    CFI_cdesc_t* sipun,
+    CFI_cdesc_t* siput,
+    CFI_cdesc_t* miphp,
+    CFI_cdesc_t* idxhp,
+    CFI_cdesc_t* mygridsonlvl,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* ip3d)
+{
+    mglet::gpu::sipiter2_hyperplane_level_backend(
+        mglet::gpu::FArrView<mgletreal>(dp),
+        mglet::gpu::FArrView<mgletreal>(res),
+        mglet::gpu::FArrView<const mgletreal>(sipue),
+        mglet::gpu::FArrView<const mgletreal>(sipun),
+        mglet::gpu::FArrView<const mgletreal>(siput),
+        mglet::gpu::FArrView<const mgletifk>(miphp),
+        mglet::gpu::FArrView<const mgletifk>(idxhp),
+        mglet::gpu::FArrView<const mgletint>(mygridsonlvl),
+        mglet::gpu::FArrView<const mgletint>(kkk),
+        mglet::gpu::FArrView<const mgletint>(jjj),
+        mglet::gpu::FArrView<const mgletint>(iii),
+        mglet::gpu::FArrView<const mgletint>(ip3d));
+}
+}
+
+#endif // _MGLET_USE_BACKEND_

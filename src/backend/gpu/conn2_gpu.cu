@@ -6,11 +6,11 @@
 #include <hip/hip_runtime.h>
 #endif
 
-#include "backend_tools.h"
 #include "errr.h"
 #include "f_arr_view.h"
+#include "gpu_error.h"
 
-namespace mglet::backend
+namespace mglet::gpu
 {
 
 namespace
@@ -181,4 +181,35 @@ void process_selftasks_conn2_backend(
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-} // namespace mglet::backend
+} // namespace mglet::gpu
+
+#ifdef _MGLET_USE_BACKEND_
+
+extern "C" void process_selftasks_conn2_c(
+    CFI_cdesc_t* a1,
+    CFI_cdesc_t* a2,
+    CFI_cdesc_t* a3,
+    CFI_cdesc_t* a4,
+    CFI_cdesc_t* a5,
+    CFI_cdesc_t* a6,
+    CFI_cdesc_t* selftasks,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* ip3d)
+{
+    mglet::gpu::process_selftasks_conn2_backend(
+        mglet::gpu::FArrView<mgletreal>(a1),
+        mglet::gpu::FArrView<mgletreal>(a2),
+        mglet::gpu::FArrView<mgletreal>(a3),
+        mglet::gpu::FArrView<mgletreal>(a4),
+        mglet::gpu::FArrView<mgletreal>(a5),
+        mglet::gpu::FArrView<mgletreal>(a6),
+        mglet::gpu::FArrView<const mgletint>(selftasks),
+        mglet::gpu::FArrView<const mgletint>(kkk),
+        mglet::gpu::FArrView<const mgletint>(jjj),
+        mglet::gpu::FArrView<const mgletint>(iii),
+        mglet::gpu::FArrView<const mgletint>(ip3d));
+}
+
+#endif // _MGLET_USE_BACKEND_

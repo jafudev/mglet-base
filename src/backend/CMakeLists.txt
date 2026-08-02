@@ -1,21 +1,13 @@
-add_library(backend STATIC
-    bound_pressure.cpp
-    ctof2.cpp
-    conn2.cpp
-    fieldhelper.cpp
-    laplacephi.cpp
-    parent2.cpp
-    pressuresolver.cpp
-)
+add_library(backend STATIC)
 
 set(GPU_SOURCES
-    gpu/bound_pressure_cuda.cu
-    gpu/ctof2_cuda.cu
-    gpu/conn2_cuda.cu
-    gpu/tooling_cuda.cu
-    gpu/laplacephi_cuda.cu
-    gpu/parent2_cuda.cu
-    gpu/pressuresolver_cuda.cu
+    gpu/bound_pressure_gpu.cu
+    gpu/ctof2_gpu.cu
+    gpu/conn2_gpu.cu
+    gpu/tooling_gpu.cu
+    gpu/laplacephi_gpu.cu
+    gpu/parent2_gpu.cu
+    gpu/pressuresolver_gpu.cu
 )
 
 if(MGLET_OFFLOAD_BACKEND STREQUAL "cuda")
@@ -30,6 +22,12 @@ elseif(MGLET_OFFLOAD_BACKEND STREQUAL "hip")
     set_source_files_properties(${GPU_SOURCES} PROPERTIES LANGUAGE HIP)
     target_sources(backend
         PRIVATE ${GPU_SOURCES}
+    )
+else()
+    # No GPU backend selected: gpu/*.cu above is never compiled, so give the
+    # STATIC target the one source CMake needs to determine a link language.
+    target_sources(backend
+        PRIVATE empty.cpp
     )
 endif()
 

@@ -6,10 +6,12 @@
 #include <hip/hip_runtime.h>
 #endif
 
-#include "backend_tools.h"
+#include "errr.h"
 #include "f_arr_view.h"
+#include "gpu_error.h"
+#include "gpu_tools_interface.h"
 
-namespace mglet::backend
+namespace mglet::gpu
 {
 
 namespace
@@ -116,4 +118,24 @@ void add_farr_realk(FArrView<mgletreal> lhs,  FArrView<const mgletreal> rhs)
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-} // namespace mglet::backend
+} // namespace mglet::gpu
+
+#ifdef _MGLET_USE_BACKEND_
+
+extern "C" void set_field_arr_realk_c(CFI_cdesc_t* farr, mgletreal val)
+{
+    mglet::gpu::set_farr_realk(mglet::gpu::FArrView<mgletreal>(farr), val);
+}
+
+extern "C" void set_field_arr_ifk_c(CFI_cdesc_t* farr, mgletifk val)
+{
+    mglet::gpu::set_farr_ifk(mglet::gpu::FArrView<mgletifk>(farr), val);
+}
+
+extern "C" void accumulate_pcorr_c(CFI_cdesc_t* dp, CFI_cdesc_t* hilf)
+{
+    mglet::gpu::add_farr_realk(
+        mglet::gpu::FArrView<mgletreal>(dp), mglet::gpu::FArrView<const mgletreal>(hilf));
+}
+
+#endif // _MGLET_USE_BACKEND_

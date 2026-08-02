@@ -6,7 +6,7 @@
 #include "errr.h"
 #include "mglet_precision.h"
 
-namespace mglet::backend
+namespace mglet::gpu
 {
 
 template <class T>
@@ -63,4 +63,4 @@ class FArrView
     std::size_t flat_size_;
 };
 
-} // mglet::backend
+} // mglet::gpu

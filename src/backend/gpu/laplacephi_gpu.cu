@@ -6,11 +6,11 @@
 #include <hip/hip_runtime.h>
 #endif
 
-#include "backend_tools.h"
 #include "errr.h"
 #include "f_arr_view.h"
+#include "gpu_error.h"
 
-namespace mglet::backend
+namespace mglet::gpu
 {
 
 namespace
@@ -250,4 +250,97 @@ void laplacephi_level_backend(
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-} // namespace mglet::backend
+} // namespace mglet::gpu
+
+#ifdef _MGLET_USE_BACKEND_
+
+extern "C"
+{
+
+void laplacephi_c(
+    CFI_cdesc_t* res,
+    CFI_cdesc_t* phi,
+    CFI_cdesc_t* gsaw,
+    CFI_cdesc_t* gsae,
+    CFI_cdesc_t* gsas,
+    CFI_cdesc_t* gsan,
+    CFI_cdesc_t* gsab,
+    CFI_cdesc_t* gsat,
+    CFI_cdesc_t* gsap,
+    CFI_cdesc_t* bp,
+    CFI_cdesc_t* mygrids,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* ip3d,
+    CFI_cdesc_t* ip1dx,
+    CFI_cdesc_t* ip1dy,
+    CFI_cdesc_t* ip1dz)
+{
+    mglet::gpu::laplacephi_backend(
+        mglet::gpu::FArrView<mgletreal>(res),
+        mglet::gpu::FArrView<const mgletreal>(phi),
+        mglet::gpu::FArrView<const mgletreal>(gsaw),
+        mglet::gpu::FArrView<const mgletreal>(gsae),
+        mglet::gpu::FArrView<const mgletreal>(gsas),
+        mglet::gpu::FArrView<const mgletreal>(gsan),
+        mglet::gpu::FArrView<const mgletreal>(gsab),
+        mglet::gpu::FArrView<const mgletreal>(gsat),
+        mglet::gpu::FArrView<const mgletreal>(gsap),
+        mglet::gpu::FArrView<const mgletreal>(bp),
+        mglet::gpu::FArrView<const mgletint>(mygrids),
+        mglet::gpu::FArrView<const mgletint>(kkk),
+        mglet::gpu::FArrView<const mgletint>(jjj),
+        mglet::gpu::FArrView<const mgletint>(iii),
+        mglet::gpu::FArrView<const mgletint>(ip3d),
+        mglet::gpu::FArrView<const mgletint>(ip1dx),
+        mglet::gpu::FArrView<const mgletint>(ip1dy),
+        mglet::gpu::FArrView<const mgletint>(ip1dz));
+}
+
+
+void laplacephi_level_c(
+    CFI_cdesc_t* res,
+    CFI_cdesc_t* phi,
+    CFI_cdesc_t* gsaw,
+    CFI_cdesc_t* gsae,
+    CFI_cdesc_t* gsas,
+    CFI_cdesc_t* gsan,
+    CFI_cdesc_t* gsab,
+    CFI_cdesc_t* gsat,
+    CFI_cdesc_t* gsap,
+    CFI_cdesc_t* bp,
+    mgletint nmygridsonlvl,
+    CFI_cdesc_t* mygridsonlvl,
+    CFI_cdesc_t* kkk,
+    CFI_cdesc_t* jjj,
+    CFI_cdesc_t* iii,
+    CFI_cdesc_t* ip3d,
+    CFI_cdesc_t* ip1dx,
+    CFI_cdesc_t* ip1dy,
+    CFI_cdesc_t* ip1dz)
+{
+    mglet::gpu::laplacephi_level_backend(
+        mglet::gpu::FArrView<mgletreal>(res),
+        mglet::gpu::FArrView<const mgletreal>(phi),
+        mglet::gpu::FArrView<const mgletreal>(gsaw),
+        mglet::gpu::FArrView<const mgletreal>(gsae),
+        mglet::gpu::FArrView<const mgletreal>(gsas),
+        mglet::gpu::FArrView<const mgletreal>(gsan),
+        mglet::gpu::FArrView<const mgletreal>(gsab),
+        mglet::gpu::FArrView<const mgletreal>(gsat),
+        mglet::gpu::FArrView<const mgletreal>(gsap),
+        mglet::gpu::FArrView<const mgletreal>(bp),
+        mglet::gpu::FArrView<const mgletint>(mygridsonlvl),
+        mglet::gpu::FArrView<const mgletint>(kkk),
+        mglet::gpu::FArrView<const mgletint>(jjj),
+        mglet::gpu::FArrView<const mgletint>(iii),
+        mglet::gpu::FArrView<const mgletint>(ip3d),
+        mglet::gpu::FArrView<const mgletint>(ip1dx),
+        mglet::gpu::FArrView<const mgletint>(ip1dy),
+        mglet::gpu::FArrView<const mgletint>(ip1dz));
+}
+
+}
+
+#endif // _MGLET_USE_BACKEND_
