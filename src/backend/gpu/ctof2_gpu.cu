@@ -7,8 +7,8 @@
 #endif
 
 #include "errr.h"
-#include "f_arr_view.h"
-#include "gpu_error.h"
+#include "mapped_arr_view.h"
+#include "gpu_check.h"
 
 namespace mglet::gpu
 {
@@ -81,13 +81,13 @@ __global__ void process_selftasks_ctof2_kernel(
 } // namespace
 
 void process_selftasks_ctof2_backend(
-    FArrView<const mgletreal> fc,
-    FArrView<mgletreal> ff,
-    FArrView<const mgletint> selftasks,
-    FArrView<const mgletint> kkk,
-    FArrView<const mgletint> jjj,
-    FArrView<const mgletint> iii,
-    FArrView<const mgletint> ip3d)
+    MappedArrView<const mgletreal> fc,
+    MappedArrView<mgletreal> ff,
+    MappedArrView<const mgletint> selftasks,
+    MappedArrView<const mgletint> kkk,
+    MappedArrView<const mgletint> jjj,
+    MappedArrView<const mgletint> iii,
+    MappedArrView<const mgletint> ip3d)
 {
     const auto ntasks = static_cast<int>((selftasks.flat_size() / selftask_size)) - 1;
 
@@ -132,13 +132,13 @@ extern "C" void process_selftasks_ctof2_c(
     CFI_cdesc_t* ip3d)
 {
     mglet::gpu::process_selftasks_ctof2_backend(
-        mglet::gpu::FArrView<const mgletreal>(fc),
-        mglet::gpu::FArrView<mgletreal>(ff),
-        mglet::gpu::FArrView<const mgletint>(selftasks),
-        mglet::gpu::FArrView<const mgletint>(kkk),
-        mglet::gpu::FArrView<const mgletint>(jjj),
-        mglet::gpu::FArrView<const mgletint>(iii),
-        mglet::gpu::FArrView<const mgletint>(ip3d));
+        mglet::gpu::MappedArrView<const mgletreal>(fc),
+        mglet::gpu::MappedArrView<mgletreal>(ff),
+        mglet::gpu::MappedArrView<const mgletint>(selftasks),
+        mglet::gpu::MappedArrView<const mgletint>(kkk),
+        mglet::gpu::MappedArrView<const mgletint>(jjj),
+        mglet::gpu::MappedArrView<const mgletint>(iii),
+        mglet::gpu::MappedArrView<const mgletint>(ip3d));
 }
 
 #endif // _MGLET_USE_BACKEND_

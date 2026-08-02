@@ -7,8 +7,8 @@
 #endif
 
 #include "errr.h"
-#include "f_arr_view.h"
-#include "gpu_error.h"
+#include "mapped_arr_view.h"
+#include "gpu_check.h"
 
 namespace mglet::gpu
 {
@@ -266,13 +266,13 @@ __global__ void sipiter2_hyperplane_level_kernel(
 } // namespace
 
 void maxabscal_backend(
-    FArrView<mgletreal> maxabsgrid,
-    FArrView<const mgletreal> phi,
-    FArrView<const mgletint> mygrids,
-    FArrView<const mgletint> kkk,
-    FArrView<const mgletint> jjj,
-    FArrView<const mgletint> iii,
-    FArrView<const mgletint> ip3d)
+    MappedArrView<mgletreal> maxabsgrid,
+    MappedArrView<const mgletreal> phi,
+    MappedArrView<const mgletint> mygrids,
+    MappedArrView<const mgletint> kkk,
+    MappedArrView<const mgletint> jjj,
+    MappedArrView<const mgletint> iii,
+    MappedArrView<const mgletint> ip3d)
 {
     const auto nmygrids = mygrids.flat_size();
 
@@ -300,13 +300,13 @@ void maxabscal_backend(
 }
 
 void rescal_backend(
-    FArrView<mgletreal> rhs,
-    FArrView<const mgletreal> res,
-    FArrView<const mgletint> mygrids,
-    FArrView<const mgletint> kkk,
-    FArrView<const mgletint> jjj,
-    FArrView<const mgletint> iii,
-    FArrView<const mgletint> ip3d)
+    MappedArrView<mgletreal> rhs,
+    MappedArrView<const mgletreal> res,
+    MappedArrView<const mgletint> mygrids,
+    MappedArrView<const mgletint> kkk,
+    MappedArrView<const mgletint> jjj,
+    MappedArrView<const mgletint> iii,
+    MappedArrView<const mgletint> ip3d)
 {
     const auto nmygrids = mygrids.flat_size();
 
@@ -341,19 +341,19 @@ void rescal_backend(
 }
 
 void sipiter1_hyperplane_level_backend(
-    FArrView<mgletreal>(res),
-    FArrView<const mgletreal> rhs,
-    FArrView<const mgletreal> siplw,
-    FArrView<const mgletreal> sipls,
-    FArrView<const mgletreal> siplb,
-    FArrView<const mgletreal> siplpr,
-    FArrView<const mgletifk> miphp,
-    FArrView<const mgletifk> idxhp,
-    FArrView<const mgletint> mygridsonlvl,
-    FArrView<const mgletint> kkk,
-    FArrView<const mgletint> jjj,
-    FArrView<const mgletint> iii,
-    FArrView<const mgletint> ip3d)
+    MappedArrView<mgletreal>(res),
+    MappedArrView<const mgletreal> rhs,
+    MappedArrView<const mgletreal> siplw,
+    MappedArrView<const mgletreal> sipls,
+    MappedArrView<const mgletreal> siplb,
+    MappedArrView<const mgletreal> siplpr,
+    MappedArrView<const mgletifk> miphp,
+    MappedArrView<const mgletifk> idxhp,
+    MappedArrView<const mgletint> mygridsonlvl,
+    MappedArrView<const mgletint> kkk,
+    MappedArrView<const mgletint> jjj,
+    MappedArrView<const mgletint> iii,
+    MappedArrView<const mgletint> ip3d)
 {
     const auto nmygridsonlvl = mygridsonlvl.flat_size();
 
@@ -381,18 +381,18 @@ void sipiter1_hyperplane_level_backend(
 }
 
 void sipiter2_hyperplane_level_backend(
-    FArrView<mgletreal> dp,
-    FArrView<mgletreal> res,
-    FArrView<const mgletreal> sipue,
-    FArrView<const mgletreal> sipun,
-    FArrView<const mgletreal> siput,
-    FArrView<const mgletifk> miphp,
-    FArrView<const mgletifk> idxhp,
-    FArrView<const mgletint> mygridsonlvl,
-    FArrView<const mgletint> kkk,
-    FArrView<const mgletint> jjj,
-    FArrView<const mgletint> iii,
-    FArrView<const mgletint> ip3d)
+    MappedArrView<mgletreal> dp,
+    MappedArrView<mgletreal> res,
+    MappedArrView<const mgletreal> sipue,
+    MappedArrView<const mgletreal> sipun,
+    MappedArrView<const mgletreal> siput,
+    MappedArrView<const mgletifk> miphp,
+    MappedArrView<const mgletifk> idxhp,
+    MappedArrView<const mgletint> mygridsonlvl,
+    MappedArrView<const mgletint> kkk,
+    MappedArrView<const mgletint> jjj,
+    MappedArrView<const mgletint> iii,
+    MappedArrView<const mgletint> ip3d)
 {
     const auto nmygridsonlvl = mygridsonlvl.flat_size();
 
@@ -436,13 +436,13 @@ void maxabscal_c(
     CFI_cdesc_t* idim3d)
 {
     mglet::gpu::maxabscal_backend(
-        mglet::gpu::FArrView<mgletreal>(maxabsgrid),
-        mglet::gpu::FArrView<const mgletreal>(phi),
-        mglet::gpu::FArrView<const mgletint>(mygrids),
-        mglet::gpu::FArrView<const mgletint>(kkk),
-        mglet::gpu::FArrView<const mgletint>(jjj),
-        mglet::gpu::FArrView<const mgletint>(iii),
-        mglet::gpu::FArrView<const mgletint>(idim3d));
+        mglet::gpu::MappedArrView<mgletreal>(maxabsgrid),
+        mglet::gpu::MappedArrView<const mgletreal>(phi),
+        mglet::gpu::MappedArrView<const mgletint>(mygrids),
+        mglet::gpu::MappedArrView<const mgletint>(kkk),
+        mglet::gpu::MappedArrView<const mgletint>(jjj),
+        mglet::gpu::MappedArrView<const mgletint>(iii),
+        mglet::gpu::MappedArrView<const mgletint>(idim3d));
 }
 
 void rescal_c(
@@ -455,13 +455,13 @@ void rescal_c(
     CFI_cdesc_t* idim3d)
 {
     mglet::gpu::rescal_backend(
-        mglet::gpu::FArrView<mgletreal>(rhs),
-        mglet::gpu::FArrView<const mgletreal>(res),
-        mglet::gpu::FArrView<const mgletint>(mygrids),
-        mglet::gpu::FArrView<const mgletint>(kkk),
-        mglet::gpu::FArrView<const mgletint>(jjj),
-        mglet::gpu::FArrView<const mgletint>(iii),
-        mglet::gpu::FArrView<const mgletint>(idim3d));
+        mglet::gpu::MappedArrView<mgletreal>(rhs),
+        mglet::gpu::MappedArrView<const mgletreal>(res),
+        mglet::gpu::MappedArrView<const mgletint>(mygrids),
+        mglet::gpu::MappedArrView<const mgletint>(kkk),
+        mglet::gpu::MappedArrView<const mgletint>(jjj),
+        mglet::gpu::MappedArrView<const mgletint>(iii),
+        mglet::gpu::MappedArrView<const mgletint>(idim3d));
 }
 
 void sipiter1_hyperplane_level_c(
@@ -480,19 +480,19 @@ void sipiter1_hyperplane_level_c(
     CFI_cdesc_t* ip3d)
 {
     mglet::gpu::sipiter1_hyperplane_level_backend(
-        mglet::gpu::FArrView<mgletreal>(res),
-        mglet::gpu::FArrView<const mgletreal>(rhs),
-        mglet::gpu::FArrView<const mgletreal>(siplw),
-        mglet::gpu::FArrView<const mgletreal>(sipls),
-        mglet::gpu::FArrView<const mgletreal>(siplb),
-        mglet::gpu::FArrView<const mgletreal>(siplpr),
-        mglet::gpu::FArrView<const mgletifk>(miphp),
-        mglet::gpu::FArrView<const mgletifk>(idxhp),
-        mglet::gpu::FArrView<const mgletint>(mygridsonlvl),
-        mglet::gpu::FArrView<const mgletint>(kkk),
-        mglet::gpu::FArrView<const mgletint>(jjj),
-        mglet::gpu::FArrView<const mgletint>(iii),
-        mglet::gpu::FArrView<const mgletint>(ip3d));
+        mglet::gpu::MappedArrView<mgletreal>(res),
+        mglet::gpu::MappedArrView<const mgletreal>(rhs),
+        mglet::gpu::MappedArrView<const mgletreal>(siplw),
+        mglet::gpu::MappedArrView<const mgletreal>(sipls),
+        mglet::gpu::MappedArrView<const mgletreal>(siplb),
+        mglet::gpu::MappedArrView<const mgletreal>(siplpr),
+        mglet::gpu::MappedArrView<const mgletifk>(miphp),
+        mglet::gpu::MappedArrView<const mgletifk>(idxhp),
+        mglet::gpu::MappedArrView<const mgletint>(mygridsonlvl),
+        mglet::gpu::MappedArrView<const mgletint>(kkk),
+        mglet::gpu::MappedArrView<const mgletint>(jjj),
+        mglet::gpu::MappedArrView<const mgletint>(iii),
+        mglet::gpu::MappedArrView<const mgletint>(ip3d));
 }
 
 void sipiter2_hyperplane_level_c(
@@ -510,18 +510,18 @@ void sipiter2_hyperplane_level_c(
     CFI_cdesc_t* ip3d)
 {
     mglet::gpu::sipiter2_hyperplane_level_backend(
-        mglet::gpu::FArrView<mgletreal>(dp),
-        mglet::gpu::FArrView<mgletreal>(res),
-        mglet::gpu::FArrView<const mgletreal>(sipue),
-        mglet::gpu::FArrView<const mgletreal>(sipun),
-        mglet::gpu::FArrView<const mgletreal>(siput),
-        mglet::gpu::FArrView<const mgletifk>(miphp),
-        mglet::gpu::FArrView<const mgletifk>(idxhp),
-        mglet::gpu::FArrView<const mgletint>(mygridsonlvl),
-        mglet::gpu::FArrView<const mgletint>(kkk),
-        mglet::gpu::FArrView<const mgletint>(jjj),
-        mglet::gpu::FArrView<const mgletint>(iii),
-        mglet::gpu::FArrView<const mgletint>(ip3d));
+        mglet::gpu::MappedArrView<mgletreal>(dp),
+        mglet::gpu::MappedArrView<mgletreal>(res),
+        mglet::gpu::MappedArrView<const mgletreal>(sipue),
+        mglet::gpu::MappedArrView<const mgletreal>(sipun),
+        mglet::gpu::MappedArrView<const mgletreal>(siput),
+        mglet::gpu::MappedArrView<const mgletifk>(miphp),
+        mglet::gpu::MappedArrView<const mgletifk>(idxhp),
+        mglet::gpu::MappedArrView<const mgletint>(mygridsonlvl),
+        mglet::gpu::MappedArrView<const mgletint>(kkk),
+        mglet::gpu::MappedArrView<const mgletint>(jjj),
+        mglet::gpu::MappedArrView<const mgletint>(iii),
+        mglet::gpu::MappedArrView<const mgletint>(ip3d));
 }
 }
 

@@ -7,9 +7,9 @@
 #endif
 
 #include "errr.h"
-#include "f_arr_view.h"
-#include "gpu_error.h"
+#include "gpu_check.h"
 #include "gpu_tools_interface.h"
+#include "mapped_arr_view.h"
 
 namespace mglet::gpu
 {
@@ -58,7 +58,7 @@ __global__ void add_farr_realk_kernel(
 
 } // namespace
 
-void set_farr_realk(FArrView<mgletreal> farr, mgletreal val)
+void set_farr_realk(MappedArrView<mgletreal> farr, mgletreal val)
 {
     const auto n = farr.flat_size();
 
@@ -76,7 +76,7 @@ void set_farr_realk(FArrView<mgletreal> farr, mgletreal val)
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-void set_farr_ifk(FArrView<mgletifk> farr, mgletifk val)
+void set_farr_ifk(MappedArrView<mgletifk> farr, mgletifk val)
 {
     const auto n = farr.flat_size();
 
@@ -94,7 +94,7 @@ void set_farr_ifk(FArrView<mgletifk> farr, mgletifk val)
     GPU_CHECK(gpuDeviceSynchronize());
 }
 
-void add_farr_realk(FArrView<mgletreal> lhs,  FArrView<const mgletreal> rhs)
+void add_farr_realk(MappedArrView<mgletreal> lhs,  MappedArrView<const mgletreal> rhs)
 {
     const auto n_lhs = lhs.flat_size();
     const auto n_rhs = rhs.flat_size();
@@ -124,18 +124,18 @@ void add_farr_realk(FArrView<mgletreal> lhs,  FArrView<const mgletreal> rhs)
 
 extern "C" void set_field_arr_realk_c(CFI_cdesc_t* farr, mgletreal val)
 {
-    mglet::gpu::set_farr_realk(mglet::gpu::FArrView<mgletreal>(farr), val);
+    mglet::gpu::set_farr_realk(mglet::gpu::MappedArrView<mgletreal>(farr), val);
 }
 
 extern "C" void set_field_arr_ifk_c(CFI_cdesc_t* farr, mgletifk val)
 {
-    mglet::gpu::set_farr_ifk(mglet::gpu::FArrView<mgletifk>(farr), val);
+    mglet::gpu::set_farr_ifk(mglet::gpu::MappedArrView<mgletifk>(farr), val);
 }
 
 extern "C" void accumulate_pcorr_c(CFI_cdesc_t* dp, CFI_cdesc_t* hilf)
 {
     mglet::gpu::add_farr_realk(
-        mglet::gpu::FArrView<mgletreal>(dp), mglet::gpu::FArrView<const mgletreal>(hilf));
+        mglet::gpu::MappedArrView<mgletreal>(dp), mglet::gpu::MappedArrView<const mgletreal>(hilf));
 }
 
 #endif // _MGLET_USE_BACKEND_

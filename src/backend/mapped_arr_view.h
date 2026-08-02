@@ -10,10 +10,10 @@ namespace mglet::gpu
 {
 
 template <class T>
-class FArrView
+class MappedArrView
 {
   public:
-    FArrView(CFI_cdesc_t* arr)
+    MappedArrView(CFI_cdesc_t* arr)
     {
         if (arr == nullptr)
         {

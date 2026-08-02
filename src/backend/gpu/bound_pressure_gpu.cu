@@ -7,8 +7,8 @@
 #endif
 
 #include "errr.h"
-#include "f_arr_view.h"
-#include "gpu_error.h"
+#include "mapped_arr_view.h"
+#include "gpu_check.h"
 
 namespace mglet::gpu
 {
@@ -822,25 +822,25 @@ __global__ void bound_pressure_nobp_kernel(
 } // namespace
 
 void bound_pressure_bp_backend(
-    FArrView<mgletreal> p,
-    FArrView<const mgletreal> pbuffer,
-    FArrView<const mgletreal> bp,
-    FArrView<const mgletreal> dx,
-    FArrView<const mgletreal> dy,
-    FArrView<const mgletreal> dz,
-    FArrView<const mgletreal> ddx,
-    FArrView<const mgletreal> ddy,
-    FArrView<const mgletreal> ddz,
+    MappedArrView<mgletreal> p,
+    MappedArrView<const mgletreal> pbuffer,
+    MappedArrView<const mgletreal> bp,
+    MappedArrView<const mgletreal> dx,
+    MappedArrView<const mgletreal> dy,
+    MappedArrView<const mgletreal> dz,
+    MappedArrView<const mgletreal> ddx,
+    MappedArrView<const mgletreal> ddy,
+    MappedArrView<const mgletreal> ddz,
     mgletint nboundtasks,
-    FArrView<const mgletint> boundtasks_lvl,
-    FArrView<const mgletint> kkk,
-    FArrView<const mgletint> jjj,
-    FArrView<const mgletint> iii,
-    FArrView<const mgletint> ip3d,
-    FArrView<const mgletint> ip1dx,
-    FArrView<const mgletint> ip1dy,
-    FArrView<const mgletint> ip1dz,
-    FArrView<const mgletint> ipbb)
+    MappedArrView<const mgletint> boundtasks_lvl,
+    MappedArrView<const mgletint> kkk,
+    MappedArrView<const mgletint> jjj,
+    MappedArrView<const mgletint> iii,
+    MappedArrView<const mgletint> ip3d,
+    MappedArrView<const mgletint> ip1dx,
+    MappedArrView<const mgletint> ip1dy,
+    MappedArrView<const mgletint> ip1dz,
+    MappedArrView<const mgletint> ipbb)
 {
     if (nboundtasks == 0)
     {
@@ -876,24 +876,24 @@ void bound_pressure_bp_backend(
 }
 
 void bound_pressure_nobp_backend(
-    FArrView<mgletreal> p,
-    FArrView<const mgletreal> pbuffer,
-    FArrView<const mgletreal> dx,
-    FArrView<const mgletreal> dy,
-    FArrView<const mgletreal> dz,
-    FArrView<const mgletreal> ddx,
-    FArrView<const mgletreal> ddy,
-    FArrView<const mgletreal> ddz,
+    MappedArrView<mgletreal> p,
+    MappedArrView<const mgletreal> pbuffer,
+    MappedArrView<const mgletreal> dx,
+    MappedArrView<const mgletreal> dy,
+    MappedArrView<const mgletreal> dz,
+    MappedArrView<const mgletreal> ddx,
+    MappedArrView<const mgletreal> ddy,
+    MappedArrView<const mgletreal> ddz,
     mgletint nboundtasks,
-    FArrView<const mgletint> boundtasks_lvl,
-    FArrView<const mgletint> kkk,
-    FArrView<const mgletint> jjj,
-    FArrView<const mgletint> iii,
-    FArrView<const mgletint> ip3d,
-    FArrView<const mgletint> ip1dx,
-    FArrView<const mgletint> ip1dy,
-    FArrView<const mgletint> ip1dz,
-    FArrView<const mgletint> ipbb)
+    MappedArrView<const mgletint> boundtasks_lvl,
+    MappedArrView<const mgletint> kkk,
+    MappedArrView<const mgletint> jjj,
+    MappedArrView<const mgletint> iii,
+    MappedArrView<const mgletint> ip3d,
+    MappedArrView<const mgletint> ip1dx,
+    MappedArrView<const mgletint> ip1dy,
+    MappedArrView<const mgletint> ip1dz,
+    MappedArrView<const mgletint> ipbb)
 {
     if (nboundtasks == 0)
     {
@@ -953,25 +953,25 @@ extern "C" void bound_pressure_bp_c(
     CFI_cdesc_t* ipbb)
 {
     mglet::gpu::bound_pressure_bp_backend(
-        mglet::gpu::FArrView<mgletreal>(p),
-        mglet::gpu::FArrView<const mgletreal>(pbuffer),
-        mglet::gpu::FArrView<const mgletreal>(bp),
-        mglet::gpu::FArrView<const mgletreal>(dx),
-        mglet::gpu::FArrView<const mgletreal>(dy),
-        mglet::gpu::FArrView<const mgletreal>(dz),
-        mglet::gpu::FArrView<const mgletreal>(ddx),
-        mglet::gpu::FArrView<const mgletreal>(ddy),
-        mglet::gpu::FArrView<const mgletreal>(ddz),
+        mglet::gpu::MappedArrView<mgletreal>(p),
+        mglet::gpu::MappedArrView<const mgletreal>(pbuffer),
+        mglet::gpu::MappedArrView<const mgletreal>(bp),
+        mglet::gpu::MappedArrView<const mgletreal>(dx),
+        mglet::gpu::MappedArrView<const mgletreal>(dy),
+        mglet::gpu::MappedArrView<const mgletreal>(dz),
+        mglet::gpu::MappedArrView<const mgletreal>(ddx),
+        mglet::gpu::MappedArrView<const mgletreal>(ddy),
+        mglet::gpu::MappedArrView<const mgletreal>(ddz),
         nboundtasks,
-        mglet::gpu::FArrView<const mgletint>(boundtasks_lvl),
-        mglet::gpu::FArrView<const mgletint>(kkk),
-        mglet::gpu::FArrView<const mgletint>(jjj),
-        mglet::gpu::FArrView<const mgletint>(iii),
-        mglet::gpu::FArrView<const mgletint>(ip3d),
-        mglet::gpu::FArrView<const mgletint>(ip1dx),
-        mglet::gpu::FArrView<const mgletint>(ip1dy),
-        mglet::gpu::FArrView<const mgletint>(ip1dz),
-        mglet::gpu::FArrView<const mgletint>(ipbb));
+        mglet::gpu::MappedArrView<const mgletint>(boundtasks_lvl),
+        mglet::gpu::MappedArrView<const mgletint>(kkk),
+        mglet::gpu::MappedArrView<const mgletint>(jjj),
+        mglet::gpu::MappedArrView<const mgletint>(iii),
+        mglet::gpu::MappedArrView<const mgletint>(ip3d),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dx),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dy),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dz),
+        mglet::gpu::MappedArrView<const mgletint>(ipbb));
 }
 
 extern "C" void bound_pressure_nobp_c(
@@ -995,24 +995,24 @@ extern "C" void bound_pressure_nobp_c(
     CFI_cdesc_t* ipbb)
 {
     mglet::gpu::bound_pressure_nobp_backend(
-        mglet::gpu::FArrView<mgletreal>(p),
-        mglet::gpu::FArrView<const mgletreal>(pbuffer),
-        mglet::gpu::FArrView<const mgletreal>(dx),
-        mglet::gpu::FArrView<const mgletreal>(dy),
-        mglet::gpu::FArrView<const mgletreal>(dz),
-        mglet::gpu::FArrView<const mgletreal>(ddx),
-        mglet::gpu::FArrView<const mgletreal>(ddy),
-        mglet::gpu::FArrView<const mgletreal>(ddz),
+        mglet::gpu::MappedArrView<mgletreal>(p),
+        mglet::gpu::MappedArrView<const mgletreal>(pbuffer),
+        mglet::gpu::MappedArrView<const mgletreal>(dx),
+        mglet::gpu::MappedArrView<const mgletreal>(dy),
+        mglet::gpu::MappedArrView<const mgletreal>(dz),
+        mglet::gpu::MappedArrView<const mgletreal>(ddx),
+        mglet::gpu::MappedArrView<const mgletreal>(ddy),
+        mglet::gpu::MappedArrView<const mgletreal>(ddz),
         nboundtasks,
-        mglet::gpu::FArrView<const mgletint>(boundtasks_lvl),
-        mglet::gpu::FArrView<const mgletint>(kkk),
-        mglet::gpu::FArrView<const mgletint>(jjj),
-        mglet::gpu::FArrView<const mgletint>(iii),
-        mglet::gpu::FArrView<const mgletint>(ip3d),
-        mglet::gpu::FArrView<const mgletint>(ip1dx),
-        mglet::gpu::FArrView<const mgletint>(ip1dy),
-        mglet::gpu::FArrView<const mgletint>(ip1dz),
-        mglet::gpu::FArrView<const mgletint>(ipbb));
+        mglet::gpu::MappedArrView<const mgletint>(boundtasks_lvl),
+        mglet::gpu::MappedArrView<const mgletint>(kkk),
+        mglet::gpu::MappedArrView<const mgletint>(jjj),
+        mglet::gpu::MappedArrView<const mgletint>(iii),
+        mglet::gpu::MappedArrView<const mgletint>(ip3d),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dx),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dy),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dz),
+        mglet::gpu::MappedArrView<const mgletint>(ipbb));
 }
 
 #endif // _MGLET_USE_BACKEND_

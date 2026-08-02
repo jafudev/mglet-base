@@ -7,8 +7,8 @@
 #endif
 
 #include "errr.h"
-#include "f_arr_view.h"
-#include "gpu_error.h"
+#include "mapped_arr_view.h"
+#include "gpu_check.h"
 
 namespace mglet::gpu
 {
@@ -141,24 +141,24 @@ __global__ void laplacephi_level_kernel(
 } // namespace
 
 void laplacephi_backend(
-    FArrView<mgletreal> res,
-    FArrView<const mgletreal> phi,
-    FArrView<const mgletreal> gsaw,
-    FArrView<const mgletreal> gsae,
-    FArrView<const mgletreal> gsas,
-    FArrView<const mgletreal> gsan,
-    FArrView<const mgletreal> gsab,
-    FArrView<const mgletreal> gsat,
-    FArrView<const mgletreal> gsap,
-    FArrView<const mgletreal> bp,
-    FArrView<const mgletint> mygrids,
-    FArrView<const mgletint> kkk,
-    FArrView<const mgletint> jjj,
-    FArrView<const mgletint> iii,
-    FArrView<const mgletint> ip3d,
-    FArrView<const mgletint> ip1dx,
-    FArrView<const mgletint> ip1dy,
-    FArrView<const mgletint> ip1dz)
+    MappedArrView<mgletreal> res,
+    MappedArrView<const mgletreal> phi,
+    MappedArrView<const mgletreal> gsaw,
+    MappedArrView<const mgletreal> gsae,
+    MappedArrView<const mgletreal> gsas,
+    MappedArrView<const mgletreal> gsan,
+    MappedArrView<const mgletreal> gsab,
+    MappedArrView<const mgletreal> gsat,
+    MappedArrView<const mgletreal> gsap,
+    MappedArrView<const mgletreal> bp,
+    MappedArrView<const mgletint> mygrids,
+    MappedArrView<const mgletint> kkk,
+    MappedArrView<const mgletint> jjj,
+    MappedArrView<const mgletint> iii,
+    MappedArrView<const mgletint> ip3d,
+    MappedArrView<const mgletint> ip1dx,
+    MappedArrView<const mgletint> ip1dy,
+    MappedArrView<const mgletint> ip1dz)
 {
     const auto nmygrids = mygrids.flat_size();
 
@@ -196,24 +196,24 @@ void laplacephi_backend(
 }
 
 void laplacephi_level_backend(
-    FArrView<mgletreal> res,
-    FArrView<const mgletreal> phi,
-    FArrView<const mgletreal> gsaw,
-    FArrView<const mgletreal> gsae,
-    FArrView<const mgletreal> gsas,
-    FArrView<const mgletreal> gsan,
-    FArrView<const mgletreal> gsab,
-    FArrView<const mgletreal> gsat,
-    FArrView<const mgletreal> gsap,
-    FArrView<const mgletreal> bp,
-    FArrView<const mgletint> mygridsonlvl,
-    FArrView<const mgletint> kkk,
-    FArrView<const mgletint> jjj,
-    FArrView<const mgletint> iii,
-    FArrView<const mgletint> ip3d,
-    FArrView<const mgletint> ip1dx,
-    FArrView<const mgletint> ip1dy,
-    FArrView<const mgletint> ip1dz)
+    MappedArrView<mgletreal> res,
+    MappedArrView<const mgletreal> phi,
+    MappedArrView<const mgletreal> gsaw,
+    MappedArrView<const mgletreal> gsae,
+    MappedArrView<const mgletreal> gsas,
+    MappedArrView<const mgletreal> gsan,
+    MappedArrView<const mgletreal> gsab,
+    MappedArrView<const mgletreal> gsat,
+    MappedArrView<const mgletreal> gsap,
+    MappedArrView<const mgletreal> bp,
+    MappedArrView<const mgletint> mygridsonlvl,
+    MappedArrView<const mgletint> kkk,
+    MappedArrView<const mgletint> jjj,
+    MappedArrView<const mgletint> iii,
+    MappedArrView<const mgletint> ip3d,
+    MappedArrView<const mgletint> ip1dx,
+    MappedArrView<const mgletint> ip1dy,
+    MappedArrView<const mgletint> ip1dz)
 {
     const auto nmygridsonlvl = mygridsonlvl.flat_size();
 
@@ -278,24 +278,24 @@ void laplacephi_c(
     CFI_cdesc_t* ip1dz)
 {
     mglet::gpu::laplacephi_backend(
-        mglet::gpu::FArrView<mgletreal>(res),
-        mglet::gpu::FArrView<const mgletreal>(phi),
-        mglet::gpu::FArrView<const mgletreal>(gsaw),
-        mglet::gpu::FArrView<const mgletreal>(gsae),
-        mglet::gpu::FArrView<const mgletreal>(gsas),
-        mglet::gpu::FArrView<const mgletreal>(gsan),
-        mglet::gpu::FArrView<const mgletreal>(gsab),
-        mglet::gpu::FArrView<const mgletreal>(gsat),
-        mglet::gpu::FArrView<const mgletreal>(gsap),
-        mglet::gpu::FArrView<const mgletreal>(bp),
-        mglet::gpu::FArrView<const mgletint>(mygrids),
-        mglet::gpu::FArrView<const mgletint>(kkk),
-        mglet::gpu::FArrView<const mgletint>(jjj),
-        mglet::gpu::FArrView<const mgletint>(iii),
-        mglet::gpu::FArrView<const mgletint>(ip3d),
-        mglet::gpu::FArrView<const mgletint>(ip1dx),
-        mglet::gpu::FArrView<const mgletint>(ip1dy),
-        mglet::gpu::FArrView<const mgletint>(ip1dz));
+        mglet::gpu::MappedArrView<mgletreal>(res),
+        mglet::gpu::MappedArrView<const mgletreal>(phi),
+        mglet::gpu::MappedArrView<const mgletreal>(gsaw),
+        mglet::gpu::MappedArrView<const mgletreal>(gsae),
+        mglet::gpu::MappedArrView<const mgletreal>(gsas),
+        mglet::gpu::MappedArrView<const mgletreal>(gsan),
+        mglet::gpu::MappedArrView<const mgletreal>(gsab),
+        mglet::gpu::MappedArrView<const mgletreal>(gsat),
+        mglet::gpu::MappedArrView<const mgletreal>(gsap),
+        mglet::gpu::MappedArrView<const mgletreal>(bp),
+        mglet::gpu::MappedArrView<const mgletint>(mygrids),
+        mglet::gpu::MappedArrView<const mgletint>(kkk),
+        mglet::gpu::MappedArrView<const mgletint>(jjj),
+        mglet::gpu::MappedArrView<const mgletint>(iii),
+        mglet::gpu::MappedArrView<const mgletint>(ip3d),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dx),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dy),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dz));
 }
 
 
@@ -321,24 +321,24 @@ void laplacephi_level_c(
     CFI_cdesc_t* ip1dz)
 {
     mglet::gpu::laplacephi_level_backend(
-        mglet::gpu::FArrView<mgletreal>(res),
-        mglet::gpu::FArrView<const mgletreal>(phi),
-        mglet::gpu::FArrView<const mgletreal>(gsaw),
-        mglet::gpu::FArrView<const mgletreal>(gsae),
-        mglet::gpu::FArrView<const mgletreal>(gsas),
-        mglet::gpu::FArrView<const mgletreal>(gsan),
-        mglet::gpu::FArrView<const mgletreal>(gsab),
-        mglet::gpu::FArrView<const mgletreal>(gsat),
-        mglet::gpu::FArrView<const mgletreal>(gsap),
-        mglet::gpu::FArrView<const mgletreal>(bp),
-        mglet::gpu::FArrView<const mgletint>(mygridsonlvl),
-        mglet::gpu::FArrView<const mgletint>(kkk),
-        mglet::gpu::FArrView<const mgletint>(jjj),
-        mglet::gpu::FArrView<const mgletint>(iii),
-        mglet::gpu::FArrView<const mgletint>(ip3d),
-        mglet::gpu::FArrView<const mgletint>(ip1dx),
-        mglet::gpu::FArrView<const mgletint>(ip1dy),
-        mglet::gpu::FArrView<const mgletint>(ip1dz));
+        mglet::gpu::MappedArrView<mgletreal>(res),
+        mglet::gpu::MappedArrView<const mgletreal>(phi),
+        mglet::gpu::MappedArrView<const mgletreal>(gsaw),
+        mglet::gpu::MappedArrView<const mgletreal>(gsae),
+        mglet::gpu::MappedArrView<const mgletreal>(gsas),
+        mglet::gpu::MappedArrView<const mgletreal>(gsan),
+        mglet::gpu::MappedArrView<const mgletreal>(gsab),
+        mglet::gpu::MappedArrView<const mgletreal>(gsat),
+        mglet::gpu::MappedArrView<const mgletreal>(gsap),
+        mglet::gpu::MappedArrView<const mgletreal>(bp),
+        mglet::gpu::MappedArrView<const mgletint>(mygridsonlvl),
+        mglet::gpu::MappedArrView<const mgletint>(kkk),
+        mglet::gpu::MappedArrView<const mgletint>(jjj),
+        mglet::gpu::MappedArrView<const mgletint>(iii),
+        mglet::gpu::MappedArrView<const mgletint>(ip3d),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dx),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dy),
+        mglet::gpu::MappedArrView<const mgletint>(ip1dz));
 }
 
 }
