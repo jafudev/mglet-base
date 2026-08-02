@@ -58,11 +58,11 @@ CONTAINS
 #endif
 
 #ifdef _MGLET_USE_BACKEND_
-        !CALL laplacephi_backend(res_f%arr, phi_f%arr, gsaw%arr, gsae%arr, &
-        !    gsas%arr, gsan%arr, gsab%arr, gsat%arr, gsap%arr, bp_f%arr, &
-        !    mygrids, kkk, jjj, iii, ip3d, ip1dx, ip1dy, ip1dz)
-        CALL laplacephi_impl(res_f%arr, phi_f%arr, gsaw%arr, gsae%arr, &
-            gsas%arr, gsan%arr, gsab%arr, gsat%arr, gsap%arr, bp_f%arr)
+        CALL laplacephi_backend(res_f%arr, phi_f%arr, gsaw%arr, gsae%arr, &
+            gsas%arr, gsan%arr, gsab%arr, gsat%arr, gsap%arr, bp_f%arr, &
+            mygrids, kkk, jjj, iii, ip3d, ip1dx, ip1dy, ip1dz)
+        !CALL laplacephi_impl(res_f%arr, phi_f%arr, gsaw%arr, gsae%arr, &
+        !    gsas%arr, gsan%arr, gsab%arr, gsat%arr, gsap%arr, bp_f%arr)
 
 #else
         CALL laplacephi_impl(res_f%arr, phi_f%arr, gsaw%arr, gsae%arr, &

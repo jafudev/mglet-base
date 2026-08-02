@@ -295,11 +295,11 @@ CONTAINS
             ! either.
             CALL conn(layers=1, s1=hilf)
 
+            CALL map_arr_to_device(res, hilf, rhs, message="to:res|hilf|rhs")
 
             ! res <- laplace(hilf)
             CALL laplacephi(res, hilf)
 
-            CALL map_arr_to_device(res, hilf, rhs, message="to:res|hilf|rhs")
 
             ! rhs <- rhs + res
             CALL rescal(rhs, res)

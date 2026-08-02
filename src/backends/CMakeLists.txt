@@ -12,6 +12,9 @@ if(MGLET_OFFLOAD_BACKEND STREQUAL "cuda")
         PRIVATE cuda/parent2_cuda.cu
         PRIVATE cuda/pressuresolver_cuda.cu
     )
+    target_compile_options(backends
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--fmad=false>
+    )
 elseif(MGLET_OFFLOAD_BACKEND STREQUAL "hip")
     target_sources(backends PRIVATE hip/fieldhelper_hip.hip)
 endif()
