@@ -8,7 +8,7 @@
 
 #include "errr.h"
 #include "gpu_check.h"
-#include "gpu_tools_interface.h"
+#include "arr_tools_interface.h"
 #include "mapped_arr_view.h"
 
 namespace mglet::gpu
@@ -130,12 +130,6 @@ extern "C" void set_field_arr_realk_c(CFI_cdesc_t* farr, mgletreal val)
 extern "C" void set_field_arr_ifk_c(CFI_cdesc_t* farr, mgletifk val)
 {
     mglet::gpu::set_farr_ifk(mglet::gpu::MappedArrView<mgletifk>(farr), val);
-}
-
-extern "C" void accumulate_pcorr_c(CFI_cdesc_t* dp, CFI_cdesc_t* hilf)
-{
-    mglet::gpu::add_farr_realk(
-        mglet::gpu::MappedArrView<mgletreal>(dp), mglet::gpu::MappedArrView<const mgletreal>(hilf));
 }
 
 #endif // _MGLET_USE_BACKEND_

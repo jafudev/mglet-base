@@ -4,7 +4,7 @@ set(GPU_SOURCES
     gpu/bound_pressure_gpu.cu
     gpu/ctof2_gpu.cu
     gpu/conn2_gpu.cu
-    gpu/tooling_gpu.cu
+    gpu/arr_tools.cu
     gpu/laplacephi_gpu.cu
     gpu/parent2_gpu.cu
     gpu/pressuresolver_gpu.cu

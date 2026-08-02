@@ -9,6 +9,7 @@
 #include "errr.h"
 #include "mapped_arr_view.h"
 #include "gpu_check.h"
+#include "arr_tools_interface.h"
 
 namespace mglet::gpu
 {
@@ -443,6 +444,12 @@ void maxabscal_c(
         mglet::gpu::MappedArrView<const mgletint>(jjj),
         mglet::gpu::MappedArrView<const mgletint>(iii),
         mglet::gpu::MappedArrView<const mgletint>(idim3d));
+}
+
+void accumulate_pcorr_c(CFI_cdesc_t* dp, CFI_cdesc_t* hilf)
+{
+    mglet::gpu::add_farr_realk(
+        mglet::gpu::MappedArrView<mgletreal>(dp), mglet::gpu::MappedArrView<const mgletreal>(hilf));
 }
 
 void rescal_c(
