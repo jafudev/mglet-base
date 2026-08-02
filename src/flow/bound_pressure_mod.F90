@@ -208,12 +208,12 @@ CONTAINS
         REAL(realk), CONTIGUOUS, DIMENSION(:), INTENT(in) :: pbuffer, bp, dx, dy, dz, ddx, ddy, ddz
 
         ! Local variables
-        INTEGER(intk) :: nboundtasks, i, igrid, iface
+        INTEGER(intk) :: i, igrid, iface
         INTEGER(intk) :: kk, jj, ii, ip3, ipx, ipy, ipz, ipbb_
 
         !$omp target teams distribute private(i, igrid, iface, kk, jj, ii, &
         !$omp& ip3, ipx, ipy, ipz, ipbb_)
-        DO i = 1, nboundtasks
+        DO i = 1, nbtasks
             igrid = btasks(1, i)
             iface = btasks(2, i)
 
