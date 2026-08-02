@@ -452,14 +452,13 @@ CONTAINS
     END SUBROUTINE add_selftask
 
 
-SUBROUTINE process_selftasks(fc, ff, nselftasks, etasks)
+    SUBROUTINE process_selftasks(fc, ff, nselftasks, etasks)
         ! Subroutine arguments
         TYPE(field_t), TARGET, INTENT(in) :: fc
         TYPE(field_t), TARGET, INTENT(inout) :: ff
         INTEGER(intk), INTENT(in) :: nselftasks
         INTEGER(intk), INTENT(in) :: etasks(selftasksize, nselftasks+1)
 
-        ! Leaving immediately if there are no tasks to process
         IF (nselftasks < 1) RETURN
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
@@ -470,38 +469,7 @@ SUBROUTINE process_selftasks(fc, ff, nselftasks, etasks)
         CALL process_selftasks_ctof2_backend(fc%arr, ff%arr, &
             etasks, kkk, jjj, iii, ip3d)
 #else
-        BLOCK
-            INTEGER(intk) :: itask, ista, jsta, ksta, isto, jsto, ksto
-            INTEGER(intk) :: iif, jjf, kkf, iic, jjc, kkc
-            INTEGER(intk) :: igridc, igridf, ip3c, ip3f
-
-            ASSOCIATE(fc => fc%arr, ff => ff%arr)
-
-            !$omp target teams distribute private(itask, igridf, igridc, &
-            !$omp&  ista, jsta, ksta, isto, jsto, ksto, ip3f, ip3c, &
-            !$omp&  kkf, jjf, iif, kkc, jjc, iic)
-            DO itask = 1, nselftasks
-                igridf = etasks(1, itask)
-                igridc = etasks(2, itask)
-                ista = etasks(3, itask)
-                jsta = etasks(4, itask)
-                ksta = etasks(5, itask)
-                isto = etasks(6, itask)
-                jsto = etasks(7, itask)
-                ksto = etasks(8, itask)
-
-                CALL get_ip3(ip3f, igridf)
-                CALL get_ip3(ip3c, igridc)
-                CALL get_mgdims(kkf, jjf, iif, igridf)
-                CALL get_mgdims(kkc, jjc, iic, igridc)
-
-                CALL copy_kernel(kkf, jjf, iif, kkc, jjc, iic, &
-                    ff(ip3f), fc(ip3c), ista, jsta, ksta, isto, jsto, ksto)
-            END DO
-            !$omp end target teams distribute
-
-            END ASSOCIATE
-        END BLOCK
+        CALL process_selftasks_impl(fc%arr, ff%arr, nselftasks, etasks)
 #endif
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
@@ -513,6 +481,43 @@ SUBROUTINE process_selftasks(fc, ff, nselftasks, etasks)
             CALL errr(__FILE__, __LINE__)
         END IF
     END SUBROUTINE process_selftasks
+
+
+    SUBROUTINE process_selftasks_impl(fc, ff, nselftasks, etasks)
+        ! Subroutine arguments
+        REAL(realk), CONTIGUOUS, INTENT(in) :: fc(:)
+        REAL(realk), CONTIGUOUS, INTENT(inout) :: ff(:)
+        INTEGER(intk), INTENT(in) :: nselftasks
+        INTEGER(intk), INTENT(in) :: etasks(selftasksize, nselftasks+1)
+
+        ! Local variables
+        INTEGER(intk) :: itask, ista, jsta, ksta, isto, jsto, ksto
+        INTEGER(intk) :: iif, jjf, kkf, iic, jjc, kkc
+        INTEGER(intk) :: igridc, igridf, ip3c, ip3f
+
+        !$omp target teams distribute private(itask, igridf, igridc, &
+        !$omp&  ista, jsta, ksta, isto, jsto, ksto, ip3f, ip3c, &
+        !$omp&  kkf, jjf, iif, kkc, jjc, iic)
+        DO itask = 1, nselftasks
+            igridf = etasks(1, itask)
+            igridc = etasks(2, itask)
+            ista = etasks(3, itask)
+            jsta = etasks(4, itask)
+            ksta = etasks(5, itask)
+            isto = etasks(6, itask)
+            jsto = etasks(7, itask)
+            ksto = etasks(8, itask)
+
+            CALL get_ip3(ip3f, igridf)
+            CALL get_ip3(ip3c, igridc)
+            CALL get_mgdims(kkf, jjf, iif, igridf)
+            CALL get_mgdims(kkc, jjc, iic, igridc)
+
+            CALL copy_kernel(kkf, jjf, iif, kkc, jjc, iic, &
+                ff(ip3f), fc(ip3c), ista, jsta, ksta, isto, jsto, ksto)
+        END DO
+        !$omp end target teams distribute
+    END SUBROUTINE process_selftasks_impl
 
 
     SUBROUTINE copy_kernel(kkf, jjf, iif, kkc, jjc, iic, &

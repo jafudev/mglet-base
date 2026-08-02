@@ -19,7 +19,7 @@ using gpuError_t = hipError_t;
 #define gpuGetLastError hipGetLastError
 #endif
 
-#ifdef _MGLET_USE_BACKEND_
+#if defined(_MGLET_CUDA_) || defined(_MGLET_HIP_)
 #define GPU_CHECK(func)                                                                                                \
     do                                                                                                                 \
     {                                                                                                                  \

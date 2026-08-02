@@ -155,16 +155,16 @@ CONTAINS
         CALL get_field(ddz_f, "DDZ")
 
         IF (PRESENT(bp_f)) THEN
-            CALL bound_pressure_impl_bp(ilevel, dp_f, bp_f, dx_f, dy_f, dz_f, &
+            CALL bound_pressure_bp(ilevel, dp_f, bp_f, dx_f, dy_f, dz_f, &
                 ddx_f, ddy_f, ddz_f)
         ELSE
-            CALL bound_pressure_impl_nobp(ilevel, dp_f, dx_f, dy_f, dz_f, &
+            CALL bound_pressure_nobp(ilevel, dp_f, dx_f, dy_f, dz_f, &
                 ddx_f, ddy_f, ddz_f)
         END IF
     END SUBROUTINE bound_pressure
 
 
-    SUBROUTINE bound_pressure_impl_bp(ilevel, dp_f, bp_f, dx_f, dy_f, dz_f, &
+    SUBROUTINE bound_pressure_bp(ilevel, dp_f, bp_f, dx_f, dy_f, dz_f, &
         ddx_f, ddy_f, ddz_f)
         ! Subroutine arguments
         INTEGER(intk), INTENT(in) :: ilevel
@@ -174,41 +174,48 @@ CONTAINS
         TYPE(field_t), POINTER, INTENT(in) :: ddx_f, ddy_f, ddz_f
 
         ! Local variables
-        INTEGER(intk) :: nboundtasks, ilevel_index, i, igrid, iface
-        INTEGER(intk) :: kk, jj, ii, ip3, ipx, ipy, ipz, ipbb_
+        INTEGER(intk) :: nbtasks, ilevel_index
 
         CALL level_index(ilevel_index, ilevel)
-        nboundtasks = nboundtaskslvl(ilevel_index)
-
-#ifdef _MGLET_USE_BACKEND_
-        ! boundtasks(:, :, ilevel_index) is sliced here on the host and
-        ! passed as a contiguous 2D array -- same "caller slices the level"
-        ! convention established for sipiter1/sipiter2/laplacephi_level.
-        CALL bound_pressure_bp_backend(dp_f%arr, dp_f%buffers, bp_f%arr, &
-            dx_f%arr, dy_f%arr, dz_f%arr, ddx_f%arr, ddy_f%arr, ddz_f%arr, &
-            nboundtasks, boundtasks(:, :, ilevel_index), kkk, jjj, iii, &
-            ip3d, ip1dx, ip1dy, ip1dz, ipbb)
-#else
-        ASSOCIATE( &
-            p => dp_f%arr, &
-            pbuffer => dp_f%buffers, &
-            bp => bp_f%arr, &
-            dx => dx_f%arr, &
-            dy => dy_f%arr, &
-            dz => dz_f%arr, &
-            ddx => ddx_f%arr, &
-            ddy => ddy_f%arr, &
-            ddz => ddz_f%arr)
-
+        nbtasks = nboundtaskslvl(ilevel_index)
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("bound_pressure_impl_bp")
 #endif
+
+#ifdef _MGLET_USE_BACKEND_
+        CALL bound_pressure_bp_backend(dp_f%arr, dp_f%buffers, bp_f%arr, &
+            dx_f%arr, dy_f%arr, dz_f%arr, ddx_f%arr, ddy_f%arr, ddz_f%arr, &
+            nbtasks, boundtasks(:, :, ilevel_index), kkk, jjj, iii, &
+            ip3d, ip1dx, ip1dy, ip1dz, ipbb)
+#else
+        CALL bound_pressure_bp_impl(nbtasks, boundtasks(:, :, ilevel_index), &
+            dp_f%arr, dp_f%buffers, bp_f%arr, dx_f%arr, dy_f%arr, dz_f%arr, &
+            ddx_f%arr, ddy_f%arr, ddz_f%arr)
+#endif
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_pop()
+#endif
+    END SUBROUTINE bound_pressure_bp
+
+
+    SUBROUTINE bound_pressure_bp_impl(nbtasks, btasks, p, pbuffer, bp, dx, dy, dz, ddx, ddy, ddz)
+        ! Subroutine arguments
+        INTEGER(intk), INTENT(in) :: nbtasks
+        INTEGER(intk), CONTIGUOUS, INTENT(in) :: btasks(:, :)
+        REAL(realk), CONTIGUOUS, INTENT(inout) :: p(:)
+        REAL(realk), CONTIGUOUS, DIMENSION(:), INTENT(in) :: pbuffer, bp, dx, dy, dz, ddx, ddy, ddz
+
+        ! Local variables
+        INTEGER(intk) :: nboundtasks, i, igrid, iface
+        INTEGER(intk) :: kk, jj, ii, ip3, ipx, ipy, ipz, ipbb_
+
         !$omp target teams distribute private(i, igrid, iface, kk, jj, ii, &
         !$omp& ip3, ipx, ipy, ipz, ipbb_)
         DO i = 1, nboundtasks
-            igrid = boundtasks(1, i, ilevel_index)
-            iface = boundtasks(2, i, ilevel_index)
+            igrid = btasks(1, i)
+            iface = btasks(2, i)
 
             CALL get_mgdims(kk, jj, ii, igrid)
             CALL get_ipbb(ipbb_, iface, igrid)
@@ -245,15 +252,10 @@ CONTAINS
             END SELECT
         END DO
         !$omp end target teams distribute
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-        CALL profile_range_pop()
-#endif
-        END ASSOCIATE
-#endif
-    END SUBROUTINE bound_pressure_impl_bp
+    END SUBROUTINE bound_pressure_bp_impl
 
 
-    SUBROUTINE bound_pressure_impl_nobp(ilevel, dp_f, dx_f, dy_f, dz_f, &
+    SUBROUTINE bound_pressure_nobp(ilevel, dp_f, dx_f, dy_f, dz_f, &
         ddx_f, ddy_f, ddz_f)
         ! Subroutine arguments
         INTEGER(intk), INTENT(in) :: ilevel
@@ -262,39 +264,48 @@ CONTAINS
         TYPE(field_t), POINTER, INTENT(in) :: ddx_f, ddy_f, ddz_f
 
         ! Local variables
-        INTEGER(intk) :: nboundtasks, ilevel_index, i, igrid, iface
-        INTEGER(intk) :: kk, jj, ii, ip3, ipx, ipy, ipz, ipbb_
+        INTEGER(intk) :: nbtasks, ilevel_index
 
         CALL level_index(ilevel_index, ilevel)
-        nboundtasks = nboundtaskslvl(ilevel_index)
-
-#ifdef _MGLET_USE_BACKEND_
-        ! boundtasks(:, :, ilevel_index) is sliced here on the host and
-        ! passed as a contiguous 2D array -- same "caller slices the level"
-        ! convention established for sipiter1/sipiter2/laplacephi_level.
-        CALL bound_pressure_nobp_backend(dp_f%arr, dp_f%buffers, &
-            dx_f%arr, dy_f%arr, dz_f%arr, ddx_f%arr, ddy_f%arr, ddz_f%arr, &
-            nboundtasks, boundtasks(:, :, ilevel_index), kkk, jjj, iii, &
-            ip3d, ip1dx, ip1dy, ip1dz, ipbb)
-#else
-        ASSOCIATE( &
-            p => dp_f%arr, &
-            pbuffer => dp_f%buffers, &
-            dx => dx_f%arr, &
-            dy => dy_f%arr, &
-            dz => dz_f%arr, &
-            ddx => ddx_f%arr, &
-            ddy => ddy_f%arr, &
-            ddz => ddz_f%arr)
+        nbtasks = nboundtaskslvl(ilevel_index)
 
 #ifdef _MGLET_PROFILE_ANNOTATIONS_
         CALL profile_range_push("bound_pressure_impl_nobp")
 #endif
+
+#ifdef _MGLET_USE_BACKEND_
+        CALL bound_pressure_nobp_backend(dp_f%arr, dp_f%buffers, &
+            dx_f%arr, dy_f%arr, dz_f%arr, ddx_f%arr, ddy_f%arr, ddz_f%arr, &
+            nbtasks, boundtasks(:, :, ilevel_index), kkk, jjj, iii, &
+            ip3d, ip1dx, ip1dy, ip1dz, ipbb)
+#else
+        CALL bound_pressure_nobp_impl(nbtasks, boundtasks(:, :, ilevel_index), &
+            dp_f%arr, dp_f%buffers, dx_f%arr, dy_f%arr, dz_f%arr, &
+            ddx_f%arr, ddy_f%arr, ddz_f%arr)
+#endif
+
+#ifdef _MGLET_PROFILE_ANNOTATIONS_
+        CALL profile_range_pop()
+#endif
+    END SUBROUTINE bound_pressure_nobp
+
+
+    SUBROUTINE bound_pressure_nobp_impl(nbtasks, btasks, p, pbuffer, dx, dy, dz, ddx, ddy, ddz)
+        ! Subroutine arguments
+        INTEGER(intk), INTENT(in) :: nbtasks
+        INTEGER(intk), CONTIGUOUS, INTENT(in) :: btasks(:, :)
+        REAL(realk), CONTIGUOUS, INTENT(inout) :: p(:)
+        REAL(realk), CONTIGUOUS, DIMENSION(:), INTENT(in) :: pbuffer, dx, dy, dz, ddx, ddy, ddz
+
+        ! Local variables
+        INTEGER(intk) :: nboundtasks, i, igrid, iface
+        INTEGER(intk) :: kk, jj, ii, ip3, ipx, ipy, ipz, ipbb_
+
         !$omp target teams distribute private(i, igrid, iface, kk, jj, ii, &
         !$omp& ip3, ipx, ipy, ipz, ipbb_)
-        DO i = 1, nboundtasks
-            igrid = boundtasks(1, i, ilevel_index)
-            iface = boundtasks(2, i, ilevel_index)
+        DO i = 1, nbtasks
+            igrid = btasks(1, i)
+            iface = btasks(2, i)
 
             CALL get_mgdims(kk, jj, ii, igrid)
             CALL get_ipbb(ipbb_, iface, igrid)
@@ -331,12 +342,7 @@ CONTAINS
             END SELECT
         END DO
         !$omp end target teams distribute
-#ifdef _MGLET_PROFILE_ANNOTATIONS_
-        CALL profile_range_pop()
-#endif
-        END ASSOCIATE
-#endif
-    END SUBROUTINE bound_pressure_impl_nobp
+    END SUBROUTINE bound_pressure_nobp_impl
 
 
     SUBROUTINE bfront(kk, jj, ii, i2, i3, i4, istag2, pbuffer, &
