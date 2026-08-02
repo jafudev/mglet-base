@@ -409,7 +409,12 @@ CONTAINS
         ! a value of dp was found that leads to a acceptably small residual
         DO ilevel = minlevel, maxlevel
             CALL parent(ilevel, s1=dp, device=.TRUE.)
+
+            CALL map_arr_to_device(dp)
+            CALL map_buffers_to_device(dp)
             CALL bound_pressure(ilevel, dp, bp)
+            CALL map_arr_from_device(dp)
+            CALL map_buffers_from_device(dp)
         END DO
 
         ! TODO(offload): Remove once surrounding subroutines are offloaded
@@ -484,10 +489,11 @@ CONTAINS
         CALL get_field(siput, "SIPUT")
         CALL get_field(siplpr, "SIPLPR")
 
+        CALL map_buffers_to_device(res, dp, rhs)
+        CALL map_arr_to_device(res, dp, rhs)
+
         DO iloop = 1, ninner
             CALL bound_pressure(ilevel, dp, bp)
-
-            CALL map_arr_to_device(res, dp, rhs)
 
             IF (ityp == 1 .AND. ilevel > minlevel) THEN
                 ! The SOR relaxation is usually not efficient at the
@@ -501,11 +507,12 @@ CONTAINS
             END IF
 
             CALL conn(ilevel, 1, s1=dp)
-
-            CALL map_arr_from_device(res, dp, rhs)
         END DO
-
+        
         CALL bound_pressure(ilevel, dp, bp)
+
+        CALL map_arr_from_device(res, dp, rhs)
+        CALL map_buffers_from_device(dp)
 
         CALL stop_timer(321)
     END SUBROUTINE mgpoisit
