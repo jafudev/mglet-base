@@ -1,8 +1,12 @@
-#include <cstddef>
+#include <cstdint>
 
+#if defined(_MGLET_CUDA_)
 #include <cuda_runtime.h>
+#elif defined(_MGLET_HIP_)
+#include <hip/hip_runtime.h>
+#endif
 
-#include "cutools.h"
+#include "backend_tools.h"
 #include "f_arr_view.h"
 
 namespace mglet::backend
@@ -66,8 +70,8 @@ void set_farr_realk(FArrView<mgletreal> farr, mgletreal val)
 
     set_farr_realk_kernel<<<grid_size, block_size>>>(farr.device_ptr(), n, val);
 
-    CUDA_CHECK(cudaDeviceSynchronize());
-    CUDA_CHECK(cudaGetLastError());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 void set_farr_ifk(FArrView<mgletifk> farr, mgletifk val)
@@ -84,8 +88,8 @@ void set_farr_ifk(FArrView<mgletifk> farr, mgletifk val)
 
     set_farr_ifk_kernel<<<grid_size, block_size>>>(farr.device_ptr(), n, val);
 
-    CUDA_CHECK(cudaDeviceSynchronize());
-    CUDA_CHECK(cudaGetLastError());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 void add_farr_realk(FArrView<mgletreal> lhs,  FArrView<const mgletreal> rhs)
@@ -108,8 +112,8 @@ void add_farr_realk(FArrView<mgletreal> lhs,  FArrView<const mgletreal> rhs)
 
     add_farr_realk_kernel<<<blocks, threads>>>(lhs.device_ptr(), rhs.device_ptr(), n_lhs);
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 } // namespace mglet::backend

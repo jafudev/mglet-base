@@ -61,7 +61,7 @@ target_include_directories(core
 )
 
 target_link_libraries(core
-    PRIVATE backends
+    PRIVATE backend
     PRIVATE corecore
     PRIVATE ${MPI_Fortran_LIBRARIES}
     PRIVATE ${HDF5_Fortran_LIBRARIES}

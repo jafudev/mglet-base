@@ -1,11 +1,15 @@
-#include <cstddef>
+#include <cstdint>
 
+#if defined(_MGLET_CUDA_)
 #include <cuda_runtime.h>
+#elif defined(_MGLET_HIP_)
+#include <hip/hip_runtime.h>
+#endif
 
-#include "cutools.h"
+#include "backend_tools.h"
 #include "errr.h"
 #include "f_arr_view.h"
-#include <iostream>
+
 namespace mglet::backend
 {
 
@@ -291,8 +295,8 @@ void maxabscal_backend(
         iii.device_ptr(),
         ip3d.device_ptr());
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 void rescal_backend(
@@ -332,8 +336,8 @@ void rescal_backend(
         iii.device_ptr(),
         ip3d.device_ptr());
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 void sipiter1_hyperplane_level_backend(
@@ -372,8 +376,8 @@ void sipiter1_hyperplane_level_backend(
         iii.device_ptr(),
         ip3d.device_ptr());
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 void sipiter2_hyperplane_level_backend(
@@ -410,8 +414,8 @@ void sipiter2_hyperplane_level_backend(
         iii.device_ptr(),
         ip3d.device_ptr());
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 

@@ -1,8 +1,12 @@
-#include <cstddef>
+#include <cstdint>
 
+#if defined(_MGLET_CUDA_)
 #include <cuda_runtime.h>
+#elif defined(_MGLET_HIP_)
+#include <hip/hip_runtime.h>
+#endif
 
-#include "cutools.h"
+#include "backend_tools.h"
 #include "errr.h"
 #include "f_arr_view.h"
 
@@ -187,8 +191,8 @@ void laplacephi_backend(
         ip1dy.device_ptr(),
         ip1dz.device_ptr());
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 void laplacephi_level_backend(
@@ -242,8 +246,8 @@ void laplacephi_level_backend(
         ip1dy.device_ptr(),
         ip1dz.device_ptr());
 
-    CUDA_CHECK(cudaDeviceSynchronize());
-    CUDA_CHECK(cudaGetLastError());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 } // namespace mglet::backend

@@ -1,11 +1,12 @@
-#include "parent2_backend.h"
+#include <cstdint>
 
-#include <cstddef>
-#include <iostream>
-
+#if defined(_MGLET_CUDA_)
 #include <cuda_runtime.h>
+#elif defined(_MGLET_HIP_)
+#include <hip/hip_runtime.h>
+#endif
 
-#include "cutools.h"
+#include "backend_tools.h"
 #include "errr.h"
 #include "f_arr_view.h"
 
@@ -185,8 +186,8 @@ void process_selftasks_backend(
         b1.device_ptr(), b2.device_ptr(), b3.device_ptr(),
         b4.device_ptr(), b5.device_ptr(), b6.device_ptr());
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 } // namespace mglet::backend

@@ -1,11 +1,12 @@
-#include "parent2_backend.h"
-
-#include <cstddef>
 #include <cstdint>
 
+#if defined(_MGLET_CUDA_)
 #include <cuda_runtime.h>
+#elif defined(_MGLET_HIP_)
+#include <hip/hip_runtime.h>
+#endif
 
-#include "cutools.h"
+#include "backend_tools.h"
 #include "errr.h"
 #include "f_arr_view.h"
 
@@ -176,8 +177,8 @@ void process_selftasks_conn2_backend(
         jjj.device_ptr(),
         ip3d.device_ptr());
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 } // namespace mglet::backend

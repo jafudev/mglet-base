@@ -1,11 +1,12 @@
-#include "bound_pressure_backend.h"
-
-#include <cstddef>
 #include <cstdint>
 
+#if defined(_MGLET_CUDA_)
 #include <cuda_runtime.h>
+#elif defined(_MGLET_HIP_)
+#include <hip/hip_runtime.h>
+#endif
 
-#include "cutools.h"
+#include "backend_tools.h"
 #include "errr.h"
 #include "f_arr_view.h"
 
@@ -870,8 +871,8 @@ void bound_pressure_bp_backend(
         ip1dz.device_ptr(),
         ipbb.device_ptr());
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 void bound_pressure_nobp_backend(
@@ -922,8 +923,8 @@ void bound_pressure_nobp_backend(
         ip1dz.device_ptr(),
         ipbb.device_ptr());
 
-    CUDA_CHECK(cudaGetLastError());
-    CUDA_CHECK(cudaDeviceSynchronize());
+    GPU_CHECK(gpuGetLastError());
+    GPU_CHECK(gpuDeviceSynchronize());
 }
 
 } // namespace mglet::backend
